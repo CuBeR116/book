@@ -1,0 +1,145 @@
+{
+ "nodes": 5,
+ "unlocked": false,
+ "color": "#7fd4ff",
+ "alpha": false,
+ "size": 2000,
+ "stroke": 1,
+ "nodeR": 1,
+ "coreR": 1,
+ "webR": 1,
+ "band": 66,
+ "ticks": 48,
+ "rot": 0,
+ "bandStart": 0,
+ "lush": 8,
+ "mid": 2,
+ "flora": 6,
+ "nodeOrn": 6,
+ "extraRings": 5,
+ "filigree": 1,
+ "halo": 10,
+ "microGlyphs": 4,
+ "decorOpacity": 10,
+ "glow": false,
+ "orderOK": true,
+ "serial": 0,
+ "tier": 4,
+ "bank": [],
+ "repack": false,
+ "caster": "keeper",
+ "cast": 12,
+ "slots": [
+  {
+   "material": "earth",
+   "mass": 21,
+   "density": 1500,
+   "volume": "auto",
+   "temp": 20,
+   "phase": "solid",
+   "form": "native",
+   "action": "create"
+  },
+  {
+   "material": "water",
+   "mass": 49,
+   "density": 1000,
+   "volume": "auto",
+   "temp": 20,
+   "phase": "liquid",
+   "form": "native",
+   "action": "create"
+  },
+  {
+   "material": "fire",
+   "mass": 0,
+   "density": 0.3,
+   "volume": "auto",
+   "temp": 36.6,
+   "phase": "gas",
+   "form": "native",
+   "action": "create"
+  },
+  {
+   "material": "earth",
+   "mass": 70,
+   "density": 1050,
+   "volume": "auto",
+   "temp": 20,
+   "phase": "solid",
+   "form": "native",
+   "action": "compress"
+  },
+  {
+   "material": "ether",
+   "mass": 70,
+   "density": 1050,
+   "volume": "auto",
+   "temp": 20,
+   "phase": "native",
+   "form": "native",
+   "action": "bind"
+  },
+  {
+   "material": "earth",
+   "mass": 1,
+   "density": 1500,
+   "volume": "auto",
+   "temp": 20,
+   "phase": "solid",
+   "form": "native",
+   "action": "split"
+  },
+  {
+   "material": "ether",
+   "mass": 0.1,
+   "density": 100,
+   "volume": "auto",
+   "temp": 20,
+   "phase": "native",
+   "form": "native",
+   "action": "bind"
+  },
+  {
+   "material": "ether",
+   "mass": 0.1,
+   "density": 100,
+   "volume": "auto",
+   "temp": 20,
+   "phase": "native",
+   "form": "native",
+   "action": "bind"
+  }
+ ],
+ "core": "draw",
+ "L": {
+  "construction": {
+   "on": true,
+   "op": 40
+  },
+  "rings": {
+   "on": true,
+   "op": 100
+  },
+  "ornament": {
+   "on": true,
+   "op": 88
+  },
+  "band": {
+   "on": true,
+   "op": 100
+  },
+  "web": {
+   "on": true,
+   "op": 85
+  },
+  "nodes": {
+   "on": true,
+   "op": 100
+  },
+  "core": {
+   "on": true,
+   "op": 100
+  }
+ }
+}

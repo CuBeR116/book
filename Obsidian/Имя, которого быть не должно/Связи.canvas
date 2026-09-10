@@ -1,0 +1,13 @@
+{
+	"nodes":[
+		{"id":"93185aeac1a15ad0","x":780,"y":-194,"width":400,"height":400,"color":"6","type":"file","file":"Персонажи/Эрейн Мердаль.md"},
+		{"id":"b0001b7d90a8ca4a","x":160,"y":-194,"width":410,"height":400,"color":"6","type":"file","file":"Персонажи/Линея Селларис.md"},
+		{"id":"36f15f9a1291fa63","x":480,"y":-880,"width":400,"height":400,"color":"6","type":"file","file":"Персонажи/Эмерин Селларис.md"},
+		{"id":"b91fc957388e9677","x":-387,"y":647,"width":400,"height":400,"type":"file","file":"Система магии/Продвинутая магия/Переупаковка.md"}
+	],
+	"edges":[
+		{"id":"0cd8ae2448852b4b","fromNode":"36f15f9a1291fa63","fromSide":"bottom","toNode":"b0001b7d90a8ca4a","toSide":"top"},
+		{"id":"386c1769f200a783","fromNode":"36f15f9a1291fa63","fromSide":"bottom","toNode":"93185aeac1a15ad0","toSide":"top"},
+		{"id":"3a35cd497577b947","fromNode":"b0001b7d90a8ca4a","fromSide":"bottom","toNode":"b91fc957388e9677","toSide":"top"}
+	]
+}
