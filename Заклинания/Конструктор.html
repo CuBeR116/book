@@ -511,7 +511,7 @@ function sigilGlyph(spec,s,cx,cy,w,c){return codeGlyph("SIG|"+canonicalSpec(spec
                     × форма  +  тепло
      тепло        = Q, кДж / KJ_PER_UNIT; Q = m·c·ΔT + скрытые теплоты
                     (см. «ТЕПЛО ПО ФИЗИКЕ»), и нагрев, и охлаждение
-     импульс      = ½·m·v² / КПД, кДж      по физике, КПД разгона ETA_KIN
+     импульс      = 2 (воздух) × ½·m·v² / КПД, кДж   разгон — стихия воздуха
      стабилизация = 0.5 × (масса, г / 100) × (1000 / max(плотность, 50))
      итог         = сумма × 1.2^(слотов)          пустые тоже считаются
      серия        = итог × 2.5^(номер круга)       дорогое — первым
@@ -646,7 +646,7 @@ function circleEnergy(cfg){
         note=bits.join(" · ");
       }
       else if(role==="impulse"){
-        e=0.5*objKg*r.speed*r.speed/1000/ETA_KIN;   // кДж
+        e=ELEM_COST.air*0.5*objKg*r.speed*r.speed/1000/ETA_KIN;   // кДж: разгон — стихия воздуха
         note=r.speed>0?`${massLabel(+objKg.toPrecision(3))} · ${r.speed} м/с`:"скорость не задана";
       }
       else if(role==="stab"){
