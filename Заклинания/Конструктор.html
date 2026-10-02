@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Конструктор структурных кругов · сигнатуры</title>
+<style>
+  :root{--ink:#05080d;--plate:#0b1118;--rule:#1b2b38;--rule-hi:#2b4356;
+        --text:#8fa6b8;--text-hi:#d6e6f2;--eter:#7fd4ff;--warn:#c9705a;--ok:#74b99a;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--ink);color:var(--text);
+    font-family:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    font-size:12px;line-height:1.5;display:flex;flex-direction:row-reverse;
+    -webkit-font-smoothing:antialiased;}
+  #scene{flex:1;display:flex;align-items:center;justify-content:center;padding:18px;
+    min-width:0;position:relative;
+    background:linear-gradient(var(--rule) 1px,transparent 1px) 0 0/48px 48px,
+      linear-gradient(90deg,var(--rule) 1px,transparent 1px) 0 0/48px 48px,var(--ink);}
+  #scene::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 45%,transparent 30%,var(--ink) 78%);
+    pointer-events:none;}
+  #stage{width:min(100%,92vh);aspect-ratio:1;position:relative;z-index:1}
+  #stage svg{width:100%;height:100%;display:block}
+  #chk{position:absolute;inset:0;z-index:0;opacity:0;
+    background-image:linear-gradient(45deg,#182430 25%,transparent 25%,transparent 75%,#182430 75%),
+      linear-gradient(45deg,#182430 25%,transparent 25%,transparent 75%,#182430 75%);
+    background-size:24px 24px;background-position:0 0,12px 12px;transition:opacity .2s}
+  #stage.alpha #chk{opacity:1}
+  #panel{width:410px;flex:0 0 410px;height:100vh;overflow-y:auto;background:var(--plate);
+    border-left:1px solid var(--rule);padding:20px 18px 48px;}
+  #panel::-webkit-scrollbar{width:6px}
+  #panel::-webkit-scrollbar-thumb{background:var(--rule-hi)}
+  h1{font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--text-hi);margin-bottom:2px;}
+  .sub{font-size:10.5px;color:#4f6879;letter-spacing:.05em;margin-bottom:22px}
+  section{margin-bottom:22px}
+  .head{display:flex;align-items:baseline;gap:8px;font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:#5c7789;margin-bottom:10px;}
+  .head::after{content:"";flex:1;height:1px;background:var(--rule)}
+  .nodes{display:flex;gap:6px}
+  .nb{flex:1;padding:9px 0;text-align:center;cursor:pointer;background:transparent;
+    border:1px solid var(--rule);color:var(--text);font:inherit;font-size:13px;transition:.15s;}
+  .nb:hover{border-color:var(--rule-hi);color:var(--text-hi)}
+  .nb.on{border-color:var(--eter);color:var(--eter);background:rgba(127,212,255,.07)}
+  .nb.locked{color:#4a3a36;border-color:#2a1f1c}
+  .nb.locked:hover{color:var(--warn);border-color:#4a2e26}
+  .nb.locked.on{border-color:var(--warn);color:var(--warn);background:rgba(201,112,90,.08)}
+  .note{margin-top:8px;font-size:10px;color:#4f6879}
+  .note.warn{color:var(--warn)}
+  .note.ok{color:var(--ok)}
+  .layer{display:grid;grid-template-columns:14px 1fr 34px;gap:9px;align-items:center;
+    padding:6px 0;border-bottom:1px solid var(--rule)}
+  .layer:last-child{border-bottom:0}
+  .layer label{cursor:pointer;color:var(--text);font-size:11.5px}
+  .layer.off label,.layer.off .val{color:#3c5163}
+  input[type=checkbox]{appearance:none;width:12px;height:12px;border:1px solid var(--rule-hi);
+    background:transparent;cursor:pointer;position:relative;}
+  input[type=checkbox]:checked{border-color:var(--eter)}
+  input[type=checkbox]:checked::after{content:"";position:absolute;inset:2px;background:var(--eter);}
+  .val{text-align:right;font-size:10.5px;color:#6d8598;font-variant-numeric:tabular-nums}
+  .row{display:grid;grid-template-columns:1fr 42px;gap:8px;align-items:center;margin-bottom:9px}
+  .row span:first-child{font-size:11px}
+  input[type=range]{grid-column:1/-1;appearance:none;width:100%;height:1px;
+    background:var(--rule-hi);margin:2px 0 6px;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{appearance:none;width:11px;height:11px;
+    background:var(--eter);border-radius:0;transform:rotate(45deg);cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:9px;height:9px;background:var(--eter);
+    border:0;border-radius:0;cursor:pointer;}
+  input[type=color]{width:100%;height:26px;padding:0;border:1px solid var(--rule);
+    background:transparent;cursor:pointer;}
+  select{width:100%;padding:6px 7px;background:#070c12;color:var(--text-hi);
+    border:1px solid var(--rule);font:inherit;font-size:10.5px;cursor:pointer;}
+  select:hover{border-color:var(--rule-hi)}
+  .coreline{display:grid;grid-template-columns:58px 1fr;gap:9px;align-items:center;margin-bottom:8px}
+  .tag{font-size:9.5px;letter-spacing:.11em;color:#5c7789;text-transform:uppercase}
+  .tag.core{color:var(--eter)}
+  details.slotcard{border:1px solid var(--rule);background:#070c12;margin-bottom:7px}
+  details.slotcard[open]{border-color:var(--rule-hi)}
+  details.slotcard summary{list-style:none;cursor:pointer;padding:8px 9px;display:grid;
+    grid-template-columns:54px 1fr auto;gap:8px;align-items:center;user-select:none}
+  details.slotcard summary::-webkit-details-marker{display:none}
+  .slot-title{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5c7789}
+  .slot-summary{font-size:10.5px;color:var(--text-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .finger{font-size:9px;color:#4f6879;letter-spacing:.07em}
+  .slotbody{border-top:1px solid var(--rule);padding:9px}
+  .slotgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .field label{display:block;font-size:9px;color:#5c7789;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+  .slotstatus{margin-top:8px;padding-top:7px;border-top:1px dashed var(--rule);font-size:9.5px;color:#4f6879}
+  .slotstatus.warn{color:var(--warn)}
+  .slotstatus.ok{color:var(--ok)}
+  button.act{width:100%;padding:9px;margin-bottom:6px;cursor:pointer;background:transparent;
+    border:1px solid var(--rule-hi);color:var(--text-hi);font:inherit;font-size:11px;
+    letter-spacing:.08em;transition:.15s;}
+  button.act:hover{border-color:var(--eter);color:var(--eter)}
+  button.act.ghost{border-color:var(--rule);color:var(--text)}
+  button.act.ghost:hover{border-color:var(--rule-hi);color:var(--text-hi)}
+  table.en{width:100%;border-collapse:collapse;margin-bottom:6px}
+  table.en td{padding:3px 0;font-size:11px;border-bottom:1px solid var(--rule);vertical-align:top}
+  .en-n{width:14px;color:#42596b}
+  .en-m i{display:block;font-style:normal;font-size:9.5px;color:#42596b;letter-spacing:.04em}
+  .en-v{text-align:right;color:var(--text-hi);font-variant-numeric:tabular-nums;white-space:nowrap}
+    .en-zero{color:#334756}
+  .en-tot div,.en-lean div{display:flex;justify-content:space-between;padding:3px 0;font-size:11px}
+  .en-tot span,.en-lean span{color:#5c7789}
+  .en-tot b,.en-lean b{color:var(--text-hi);font-weight:500;font-variant-numeric:tabular-nums}
+  .en-big{border-top:1px solid var(--rule-hi);margin-top:4px;padding-top:6px!important}
+  .en-big b{color:var(--eter);font-size:15px}
+  .en-bad b{color:var(--warn)}
+  .en-lean{margin-top:10px;padding-top:8px;border-top:1px dashed var(--rule)}
+  .en-waste b{color:var(--warn)}
+.bank{margin-bottom:4px}
+  .bk{display:grid;grid-template-columns:16px 1fr auto 18px 18px;gap:6px;align-items:center;
+      padding:4px 0;border-bottom:1px solid var(--rule);font-size:11px}
+  .bk-i{color:#42596b}
+  .bk-n{color:var(--text)}
+  .bk-v{color:var(--text-hi);font-variant-numeric:tabular-nums}
+  .bk-cur .bk-n{color:var(--eter)}
+  .bk-x{background:none;border:0;color:#42596b;cursor:pointer;font:inherit;padding:0}
+  .bk-x:hover{color:var(--eter)}
+  .cmp{margin-top:10px;padding-top:8px;border-top:1px dashed var(--rule)}
+  .cmp-h{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#42596b;margin-bottom:6px}
+  .cmp-r{display:flex;justify-content:space-between;padding:3px 0;font-size:11px}
+  .cmp-r span{color:#5c7789}
+  .cmp-r b{color:var(--text-hi);font-weight:500;font-variant-numeric:tabular-nums}
+  .cmp-r.dim span,.cmp-r.dim b{color:#3c5163}
+  .cmp-r.good b{color:var(--eter)}
+  .cmp-r.verdict{border-top:1px solid var(--rule);margin-top:4px;padding-top:6px}
+  .cmp-r.verdict b{color:var(--warn)}
+  .field input[type=text]{width:100%;padding:5px 6px;background:#070c12;color:var(--text-hi);
+    border:1px solid var(--rule);font:inherit;font-size:11px;font-variant-numeric:tabular-nums}
+  .field input[type=text]:focus{border-color:var(--eter);outline:none}
+  .field label i{font-style:normal;color:#3c5163;font-size:9px}
+  :focus-visible{outline:1px solid var(--eter);outline-offset:2px}
+  @media (max-width:920px){body{flex-direction:column}
+    #panel{width:100%;flex:none;height:auto;border-left:0;border-top:1px solid var(--rule)}
+    #stage{width:min(100%,70vh)}}
+</style>
+</head>
+<body>
+<div id="scene"><div id="stage"><div id="chk"></div><div id="out"></div></div></div>
+<div id="panel">
+  <h1>Структурный круг</h1>
+  <div class="sub">компилятор сигнатур · один узел = пакет параметров</div>
+
+  <section>
+    <div class="head">Узлы</div>
+    <div class="nodes" id="nodebtns"></div>
+    <div class="note" id="nodenote">Рабочих конфигураций три.</div>
+    <div style="margin-top:8px"><label style="cursor:pointer;font-size:10.5px;color:#4f6879">
+      <input type="checkbox" id="unl" style="vertical-align:-2px;margin-right:6px">показать закрытые</label></div>
+  </section>
+
+  <section>
+    <div class="head">Компиляция узлов</div>
+    <div class="coreline"><span class="tag core">ядро</span><select id="coreSelect"></select></div>
+    <div id="slots"></div>
+    <div class="note">Сигнатура не содержит читаемых цифр. Полный набор параметров смешивается в одно кодовое слово; изменение одного поля перестраивает знак целиком.</div>
+  </section>
+
+  <section>
+    <div class="head">Расход Этера · кДж</div>
+    <div class="row" style="margin-bottom:10px"><span>Ступень порядка</span></div>
+    <select id="tierSel" style="margin-bottom:10px"></select>
+    <div id="energy"></div>
+    <div style="margin-top:10px">
+      <label style="cursor:pointer;font-size:10.5px;color:#4f6879">
+      <input type="checkbox" id="ordck" checked style="vertical-align:-2px;margin-right:6px">порядок узлов верный</label>
+    </div>
+    <div class="note">Серия кругов считается в блоке «Круги»: каждый следующий круг ×2.5 к предыдущему, дорогое ставится первым.</div>
+    <div class="note">Круг умеет писать только стихии. Составные вещества — это результат, а не заказ. Ступень порядка круг задать не может: её даёт Матерь по индексному узлу.</div>
+  </section>
+
+  <section>
+    <div class="head">Круги</div>
+    <div id="bank"></div>
+    <button class="act" id="addc" style="margin-top:8px">Добавить круг</button>
+    <label style="cursor:pointer;font-size:10.5px;color:#4f6879;display:block;margin-top:6px">
+      <input type="checkbox" id="repk" style="vertical-align:-2px;margin-right:6px">этот круг — переупаковка</label>
+    <div class="note">Переупаковка не оплачивает входящие заклинания. Только связывание.</div>
+  </section>
+
+  <section>
+    <div class="head">Заклинатель</div>
+    <select id="caster"></select>
+    <div class="row" style="margin-top:8px"><span>Время активации, с</span><span class="val" id="castv">4</span>
+      <input type="range" min="0.5" max="20" step="0.5" value="4" id="cast" style="grid-column:1/-1"></div>
+    <div id="vein"></div>
+    <div class="note">Резервы, протоки и густота — предложены по физике сосудов, не канон.</div>
+  </section>
+
+  <section><div class="head">Слои</div><div id="layers"></div></section>
+  <section><div class="head">Построение</div><div id="sliders"></div></section>
+
+  <section>
+    <div class="head">Цвет</div>
+    <input type="color" id="col" value="#7fd4ff">
+    <div class="row" style="margin-top:10px"><span>Фон</span></div>
+    <button class="act ghost" id="bg">Прозрачный</button>
+    <button class="act ghost" id="glowb">Свечение: выкл</button>
+  </section>
+
+  <section>
+    <div class="head">Вывод</div>
+    <button class="act" id="exAll">Скачать SVG</button>
+    <button class="act" id="exLay">Скачать SVG по слоям</button>
+    <button class="act ghost" id="exPng">Скачать PNG 2048</button>
+    <button class="act" id="maxOrn">Всё в потолок</button>
+    <button class="act ghost" id="saveJ">Сохранить сборку</button>
+    <button class="act ghost" id="loadJ">Загрузить сборку</button>
+    <input type="file" id="fileJ" accept=".json" style="display:none">
+    <button class="act ghost" id="exDic">Скачать карту сигнатур</button>
+    <div class="note">Карта сигнатур показывает текущие узлы и их параметры — это редакторская шпаргалка, не внутренняя письменность мира.</div>
+  </section>
+</div>
+
+<script>
+/* ==============================================================
+   СИГНАТУРНАЯ ПИСЬМЕННОСТЬ
+
+   В мире знак не равен "камню" или "2 кг". Узел содержит полный
+   пакет состояния. Его поля канонизируются, смешиваются и дают
+   одно устойчивое кодовое слово. Один изменившийся параметр меняет
+   геометрию всего знака. Современный маг может копировать готовые
+   сигнатуры, но по форме почти невозможно вывести исходные числа.
+   ============================================================== */
+
+/* Состав и ступень порядка. Эфир платится за неестественность
+   расположения, а не за вещество. */
+const TIERS=[
+  ["аморфное",      1],   // 0 — камень, вода, воздух: уже в своём состоянии
+  ["обработанное",  2],   // 1 — кирпич, доска, слиток
+  ["сложное",       4],   // 2 — стекло, механизм
+  ["живое простое", 8],   // 3 — трава, мох
+  ["живое сложное",16],   // 4 — дерево, зверь, плоть
+  ["разумное",     32]    // 5 — человек
+];
+/* Круг умеет писать только стихии. Составные вещества —
+   это РЕЗУЛЬТАТ, а не то, что можно заказать. */
+const MATERIALS={
+  earth:{n:"земля", rho:1500},
+  water:{n:"вода",  rho:1000},
+  air  :{n:"воздух",rho:1.2},
+  fire :{n:"огонь", rho:0.3},
+  ether:{n:"эфир",  rho:null}
+};
+const ELEM_COST={earth:1, water:1.5, air:2, fire:3};   // канон
+
+function mixCost(key){ return ELEM_COST[key]!==undefined?ELEM_COST[key]:1; }
+function tierIdx(){ return Math.max(0,Math.min(5,S.tier===undefined?0:S.tier)); }
+function tierMul(){ return TIERS[tierIdx()][1]; }
+function tierName(){ return TIERS[tierIdx()][0]; }
+function isAlive(){ return tierIdx()>=3; }
+const MASSES=[0.1,0.25,0.5,1,2,5,10,25,50];
+const DENSITIES=[0.05,0.3,1.2,50,100,250,500,650,700,1000,1050,1600,1800,2500,2600,4000,7800];
+const VOLUMES=["auto",0.1,0.25,0.5,1,2,5,10,25,50];
+const TEMPS=[
+  ["ambient","среда"],["cold","холод"],["frost","мороз"],["warm","тёплое"],
+  ["hot","горячее"],["incandescent","накал"]
+];
+const PHASES=[["native","естественная"],["solid","твёрдая"],["liquid","жидкая"],["gas","газ"],["plasma","плазма"]];
+const FORMS=[["native","естественная"],["sphere","сфера"],["sheet","пластина"],["stream","поток"],["spike","острие"],["shell","оболочка"]];
+const ACTIONS=[["hold","удержать"],["move","двигать"],["create","создать"],["compress","сжать"],["split","разделить"],["bind","связать"]];
+const CORES=[["draw","запрос Этера"],["execute","исполнение"],["stabilize","стабилизация"],["link","связь контуров"]];
+
+const CODE_SALT="ETER/PLANETARY-SCHEMA/VII/4096";
+
+function optionList(arr,selected,labelFn=v=>String(v)){
+  return arr.map(v=>{const value=Array.isArray(v)?v[0]:v;const label=Array.isArray(v)?v[1]:labelFn(v);
+    return `<option value="${value}" ${String(value)===String(selected)?"selected":""}>${label}</option>`;}).join("");
+}
+function materialOptions(sel){return Object.entries(MATERIALS).map(([k,v])=>`<option value="${k}" ${k===sel?"selected":""}>${v.n}</option>`).join("")}
+function massLabel(v){return v<1?`${Math.round(v*1000)} г`:`${v} кг`}
+function densityLabel(v){return `${v} кг/м³`}
+function volumeLabel(v){return v==="auto"?"авто: m / ρ":`${v} л`}
+
+function baseSpec(i=0){
+  const presets=[
+    ["earth",50,1500,"auto",20,"solid","native","create"],
+    ["water",100,1000,"auto",20,"liquid","native","create"],
+    ["fire",0.003,0.3,"auto",800,"native","native","create"],   // 10 л пламени
+    ["earth",80,1050,"auto",36.6,"solid","native","compress"],
+    ["earth",80,1050,"auto",20,"solid","native","hold"],
+    ["ether",80,1050,"auto",20,"native","native","bind"],
+    ["earth",1,1500,"auto",20,"solid","native","split"],
+    ["ether",0.1,100,"auto",20,"native","native","bind"]
+  ];
+  const p=presets[i%presets.length];
+  return {material:p[0],mass:p[1],density:p[2],volume:p[3],temp:p[4],phase:p[5],form:p[6],action:p[7],speed:0};
+}
+function num(v,fallback){
+  const x=parseFloat(String(v).replace(",",".").replace(/\s+/g,""));
+  return Number.isFinite(x)?x:fallback;
+}
+function resolveSpec(s){
+  let vol=s.volume;
+  if(vol==="auto"){
+    const rho=Number(s.density),m=Number(s.mass);
+    vol=(rho>0)?+(m/rho*1000).toFixed(6):0;
+  }else vol=Number(vol);
+  return {material:s.material,mass:Number(s.mass),density:Number(s.density),volume:vol,temp:Number(s.temp),phase:s.phase,form:s.form,action:s.action,speed:Number(s.speed||0)};
+}
+function canonicalSpec(s){
+  const r=resolveSpec(s);
+  // скорость дописывается только когда задана — старые сигнатуры не меняются
+  return `m=${r.material}|kg=${r.mass}|rho=${r.density}|L=${r.volume}|T=${r.temp}C|P=${r.phase}|F=${r.form}|A=${r.action}`
+        +(r.speed>0?`|v=${r.speed}`:"");
+}
+function hash64(str){
+  let h=0xcbf29ce484222325n;
+  const prime=0x100000001b3n;
+  for(let i=0;i<str.length;i++){h^=BigInt(str.charCodeAt(i));h=BigInt.asUintN(64,h*prime)}
+  h^=h>>33n;h=BigInt.asUintN(64,h*0xff51afd7ed558ccdn);
+  h^=h>>33n;h=BigInt.asUintN(64,h*0xc4ceb9fe1a85ec53n);h^=h>>33n;
+  return BigInt.asUintN(64,h);
+}
+function signature(s){return hash64(CODE_SALT+"|"+canonicalSpec(s))}
+function fingerprint(s){return signature(s).toString(16).padStart(16,"0").toUpperCase().match(/.{1,4}/g).slice(0,2).join("·")}
+function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296}}
+
+function pt(r,a){return [r*Math.cos(a),r*Math.sin(a)]}
+function arcD(r,a0,a1){
+  const p0=pt(r,a0),p1=pt(r,a1),span=((a1-a0)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+  return `M ${p0[0].toFixed(2)},${p0[1].toFixed(2)} A ${r.toFixed(2)},${r.toFixed(2)} 0 ${span>Math.PI?1:0} 1 ${p1[0].toFixed(2)},${p1[1].toFixed(2)}`;
+}
+/* ============================================================
+   Наборная нотация: тот же хэш, но он выбирает штрихи
+   из конечного набора на жёсткой решётке, а не двигает точки.
+   ============================================================ */
+
+// ---- решётка ----------------------------------------------------------
+// x ∈ {-1,-0.5,0,0.5,1} ; y ∈ {-1.5,-1,-0.5,0,0.5,1,1.5}
+
+const SPINE = [
+  [[[0,-1.5],[0,1.5]]],
+  [[[-0.5,-1.5],[-0.5,1.5]]],
+  [[[-0.5,-1.5],[-0.5,1.5]], [[0.5,-1.5],[0.5,1.5]]],
+  [[[0.5,-1.5],[0.5,1.5]]],
+];
+
+const HEAD = [
+  [],
+  [[[-1,-1.5],[1,-1.5]]],
+  [[[-1,-1.5],[0,-1.5]]],
+  [[[0,-1.5],[1,-1.5]]],
+  [[[-1,-0.5],[-1,-1.5],[1,-1.5]]],
+  [[[-1,-0.5],[0,-1.5],[1,-0.5]]],
+  [[[-1,-1],[1,-1]]],
+  [[[-1,-1.5],[-0.5,-1.5]], [[0.5,-1.5],[1,-1.5]]],
+  [[[-1,-1.5],[-1,-0.5]]],
+  [[[1,-1.5],[1,-0.5]]],
+  [[[-0.5,-1.5],[0.5,-1.5],[0.5,-0.5]]],
+  [[[-1,-0.5],[1,-1.5]]],
+];
+
+const WAIST = [
+  [],
+  [[[-1,0],[1,0]]],
+  [[[-1,0],[0,0]]],
+  [[[0,0],[1,0]]],
+  [[[-1,-0.5],[1,0.5]]],
+  [[[-1,0.5],[1,-0.5]]],
+  [[[-0.5,-0.5],[0.5,-0.5],[0.5,0.5],[-0.5,0.5],[-0.5,-0.5]]],
+  [[[-1,-0.5],[1,-0.5]], [[-1,0.5],[1,0.5]]],
+  [[[-0.5,-0.5],[0.5,0.5]]],
+  [[[-1,0],[0,-0.5],[1,0]]],
+  [[[-1,-0.5],[-1,0.5]]],
+  [[[1,-0.5],[1,0.5]]],
+];
+
+const FOOT = [
+  [],
+  [[[-1,1.5],[1,1.5]]],
+  [[[-1,0.5],[-1,1.5],[1,1.5]]],
+  [[[1,0.5],[1,1.5],[-1,1.5]]],
+  [[[-1,0.5],[0,1.5],[1,0.5]]],
+  [[[-1,1],[1,1]]],
+  [[[-0.5,0.5],[-0.5,1.5],[0.5,1.5],[0.5,0.5]]],
+  [[[-1,1.5],[-0.5,1.5]], [[0.5,1.5],[1,1.5]]],
+  [[[-1,0.5],[-1,1.5]]],
+  [[[1,0.5],[1,1.5]]],
+  [[[-0.5,1.5],[0.5,1.5],[0.5,0.5]]],
+  [[[-1,1.5],[0,0.5],[1,1.5]]],
+];
+
+const MARK = [
+  [], [[0,-1]], [[0,1]], [[-1,0],[1,0]],
+  [[0.5,-1]], [[-0.5,1]], [[0,-1],[0,1]], [[0,0]],
+];
+
+// засечки на основе — типографская мелочь, добавляет ёмкости, не добавляя шума
+const SERIF = [
+  [], [[-0.35,-1.5]], [[0.35,-1.5]], [[-0.35,1.5]],
+  [[0.35,1.5]], [[-0.35,-1.5],[0.35,-1.5]], [[-0.35,1.5],[0.35,1.5]],
+];
+
+// ---- почерки материалов ----------------------------------------------
+// Скелет один. Меняется ведение линии и форма меток — как в настоящих
+// письменностях одна основа расходится на несколько рук.
+const HAND = {
+  earth: { curve:0.00, cap:'butt',  join:'miter', mark:'square', w2:0.62 },
+  metal: { curve:0.00, cap:'butt',  join:'miter', mark:'square', w2:0.55 },
+  wood:  { curve:0.14, cap:'round', join:'round', mark:'square', w2:0.62 },
+  fire:  { curve:0.22, cap:'butt',  join:'miter', mark:'dot',    w2:0.58 },
+  water: { curve:0.50, cap:'round', join:'round', mark:'dot',    w2:0.62 },
+  air:   { curve:0.50, cap:'round', join:'round', mark:'dot',    w2:0.50 },
+  flesh: { curve:0.36, cap:'round', join:'round', mark:'dot',    w2:0.66 },
+  light: { curve:0.28, cap:'round', join:'round', mark:'ring',   w2:0.54 },
+  ether: { curve:0.42, cap:'round', join:'round', mark:'ring',   w2:0.58 },
+  _:     { curve:0.24, cap:'round', join:'round', mark:'dot',    w2:0.60 },
+};
+
+// ---- скругление углов по фиксированному радиусу -----------------------
+function toPath(pts, U, r) {
+  const P = pts.map(([x, y]) => [x * U, y * U]);
+  if (r <= 0.001 || P.length < 3) {
+    return 'M ' + P.map(p => p.map(v => v.toFixed(2)).join(',')).join(' L ');
+  }
+  const R = r * U;
+  let d = '';
+  for (let i = 0; i < P.length; i++) {
+    const cur = P[i];
+    if (i === 0) { d += 'M ' + cur.map(v => v.toFixed(2)).join(','); continue; }
+    const prev = P[i - 1], next = P[i + 1];
+    if (!next) { d += ' L ' + cur.map(v => v.toFixed(2)).join(','); continue; }
+    const v1 = norm(sub(prev, cur)), v2 = norm(sub(next, cur));
+    const l1 = len(sub(prev, cur)) / 2, l2 = len(sub(next, cur)) / 2;
+    const rr = Math.min(R, l1, l2);
+    const a = add(cur, mul(v1, rr)), b = add(cur, mul(v2, rr));
+    d += ' L ' + a.map(v => v.toFixed(2)).join(',');
+    d += ` Q ${cur.map(v => v.toFixed(2)).join(',')} ${b.map(v => v.toFixed(2)).join(',')}`;
+  }
+  return d;
+}
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
+const mul = (a, k) => [a[0] * k, a[1] * k];
+const len = a => Math.hypot(a[0], a[1]);
+const norm = a => { const l = len(a) || 1; return [a[0] / l, a[1] / l]; };
+
+// ---- сборка знака ------------------------------------------------------
+function latticeGlyph(hash, s, cx, cy, w, c, material) {
+  const h = BigInt.asUintN(64, hash);
+  const bits = (off, n) => Number((h >> BigInt(off)) & ((1n << BigInt(n)) - 1n));
+
+  const hand = HAND[material] || HAND._;
+  const U = s * 0.30;
+  const W1 = (parseFloat(w) || 3);
+  const W2 = W1 * hand.w2;
+
+  const spine = SPINE[bits(0, 2) % SPINE.length];
+  const head  = HEAD [bits(3, 3) % HEAD.length];
+  const waist = WAIST[bits(7, 3) % WAIST.length];
+  const foot  = FOOT [bits(11, 3) % FOOT.length];
+  const mark  = MARK [bits(15, 3) % MARK.length];
+  const serif = SERIF[bits(19, 3) % SERIF.length];
+  const sx    = spine[0][0][0][0];
+
+  let o = `<g transform="translate(${cx.toFixed(2)},${cy.toFixed(2)})" fill="none" `
+        + `stroke="${c}" stroke-linecap="${hand.cap}" stroke-linejoin="${hand.join}">`;
+
+  // основа — толстая
+  spine.forEach(pl => {
+    o += `<path d="${toPath(pl, U, 0)}" stroke-width="${W1.toFixed(2)}"/>`;
+  });
+  // зоны — тонкая
+  [head, waist, foot].forEach(zone => zone.forEach(pl => {
+    o += `<path d="${toPath(pl, U, hand.curve)}" stroke-width="${W2.toFixed(2)}"/>`;
+  }));
+  // засечки на основе
+  serif.forEach(([dx, y]) => {
+    o += `<path d="${toPath([[sx, y], [sx + dx, y]], U, 0)}" stroke-width="${W2.toFixed(2)}"/>`;
+  });
+  // метки
+  const mr = U * 0.13;
+  mark.forEach(([x, y]) => {
+    const X = (x * U).toFixed(2), Y = (y * U).toFixed(2);
+    if (hand.mark === 'square')
+      o += `<rect x="${(x*U-mr).toFixed(2)}" y="${(y*U-mr).toFixed(2)}" `
+         + `width="${(mr*2).toFixed(2)}" height="${(mr*2).toFixed(2)}" fill="${c}" stroke="none"/>`;
+    else if (hand.mark === 'ring')
+      o += `<circle cx="${X}" cy="${Y}" r="${mr.toFixed(2)}" stroke-width="${(W2*0.8).toFixed(2)}"/>`;
+    else
+      o += `<circle cx="${X}" cy="${Y}" r="${mr.toFixed(2)}" fill="${c}" stroke="none"/>`;
+  });
+
+  return o + '</g>';
+}
+
+/* ---- почерк по назначению знака ---- */
+const FAMILY_HAND={frame:'metal',core:'ether',neutral:'earth'};
+function styleForKey(key){
+  if(key.startsWith("FRAME|")) return {material:'earth'};
+  if(key.startsWith("CORE|"))  return {material:'ether'};
+  return {material:'earth'};
+}
+function styleForSpec(spec){ return {material:resolveSpec(spec).material}; }
+function codeGlyph(key,s,cx,cy,w,c,style){
+  const mat=(style&&style.material)||styleForKey(key).material;
+  return latticeGlyph(hash64(CODE_SALT+"|"+key),s,cx,cy,w,c,mat);
+}
+
+function sigilGlyph(spec,s,cx,cy,w,c){return codeGlyph("SIG|"+canonicalSpec(spec),s,cx,cy,w,c,styleForSpec(spec))}
+
+/* ===================== РАСХОД ЭТЕРА =====================
+   Канон: Notion — «Справочник формул расчёта маны», «Затрата энергии»,
+   «Ядро», «Сложность магии».
+
+     вещество     = базовая стоимость × (создание ? 2 : 1) × объём, л
+                    (газ — по массе, в литрах сжиженного: см. priceLitres)
+                    × форма  +  тепло
+     тепло        = Q, кДж / KJ_PER_UNIT; Q = m·c·ΔT + скрытые теплоты
+                    (см. «ТЕПЛО ПО ФИЗИКЕ»), и нагрев, и охлаждение
+     импульс      = ½·m·v² / КПД, кДж      по физике, КПД разгона ETA_KIN
+     стабилизация = 0.5 × (масса, г / 100) × (1000 / плотность)
+     итог         = сумма × 1.2^(слотов)          пустые тоже считаются
+     серия        = итог × 2.5^(номер круга)       дорогое — первым
+
+   Круг описывает ОДИН объект. Масса и плотность объекта — сумма
+   вещественных узлов (огонь — энергия, а не масса), либо узел сжатия.
+   Если вещества нет, объект — само пламя.
+   Импульс и стабилизация платят за объект; если объекта нет —
+   за собственную массу узла.
+   ------------------------------------------------------- */
+
+/* Форма — множитель к веществу. ПРЕДЛОЖЕНО, НЕ КАНОН:
+   чем дальше от естественного состояния, тем дороже. Фаза платится теплом. */
+const FORM_MUL={native:1, sphere:1.2, sheet:1.3, stream:1.3, shell:1.5, spike:1.6};
+const T_AMBIENT=20;
+/* КПД разгона: какая доля Этера уходит в движение. ПРЕДЛОЖЕНО, НЕ КАНОН.
+   При 10% камень 1 кг на 20 м/с — 2 кДж, выстрел 30 г на 300 м/с — 13.5 кДж. */
+const ETA_KIN=0.10;
+
+/* ---------- ТЕПЛО ПО ФИЗИКЕ ----------
+   Q = m × (∫c dT + скрытая теплота всех фазовых переходов на пути)
+   Отсчёт — вещество при 20 °C в его природной фазе. Нагрев и охлаждение
+   платятся одинаково: магия и вкачивает тепло, и выкачивает его.
+   Фаза «естественная» = та, что физически бывает при этой температуре.
+   Фаза, заданная против природы (лёд при +20, вода жидкая при 150),
+   платится тем теплом, которое нужно до неё дойти; удерживает её эфир.
+
+   Константы — справочные, округлены. Земля — обобщённая горная порода.
+   Плазма — порядок энергии ионизации, грубо.                          */
+const PHASE_STEP={solid:0, liquid:1, gas:2, plasma:3};
+const THERMO={
+  //       c по фазам, кДж/(кг·К)   переходы, °C: плавл., кип., ионизация   теплоты, кДж/кг
+  earth:{c:[0.84,1.00,1.00,1.00], T:[1200, 2950, 6000],                L:[400, 12000, 30000]},
+  water:{c:[2.10,4.19,2.00,2.00], T:[0,    100,  6000],                L:[334, 2257,  60000]},
+  air:  {c:[1.00,2.00,1.005,1.005],T:[-213,-194, 6000],                L:[25,  200,   50000]},
+  fire: {c:[1.10,1.10,1.10,1.10], T:[-1e9, -1e9, 6000],                L:[0,   0,     50000]},
+};
+/* Курс: единица энергии = 1 кДж. Решение автора 2026-10-02: курс по физике. */
+const KJ_PER_UNIT=1;
+
+function physPhase(th,T){ let p=0; while(p<3&&T>th.T[p]) p++; return p; }
+// энтальпия, кДж/кг, от абсолютного нуля в твёрдой фазе; непрерывна по T
+function enthalpy(th,T){
+  let h=0, t=-273.15;
+  for(let p=0;p<4;p++){
+    const top=p<3?th.T[p]:Infinity;
+    if(T<=top){ return h+th.c[p]*(T-Math.max(t,-273.15)); }
+    if(top>t){ h+=th.c[p]*(top-Math.max(t,-273.15)); t=top; }
+    h+=th.L[p];
+  }
+  return h;
+}
+function latentBetween(th,p,q){ let s=0; for(let k=Math.min(p,q);k<Math.max(p,q);k++) s+=th.L[k]; return s; }
+// тепло узла, кДж. Фаза против природы: энтальпия сдвигается на скрытую
+// теплоту (вода жидкая при 150 — без кипения, лёд при +20 — заморожен).
+// Удерживать такое состояние — работа эфира, а не тепла.
+function heatKJ(sp){
+  const r=resolveSpec(sp), th=THERMO[r.material];
+  if(!th||!(r.mass>0)) return {kj:0,against:false};
+  const T=Number(r.temp), nat=physPhase(th,T);
+  const want=PHASE_STEP[sp.phase]===undefined?nat:PHASE_STEP[sp.phase];
+  const shift=(want>nat?1:-1)*latentBetween(th,want,nat);
+  const kj=Math.abs(enthalpy(th,T)+shift-enthalpy(th,T_AMBIENT))*r.mass;
+  return {kj,against:want!==nat};
+}
+function formMul(sp){ return FORM_MUL[sp.form]||1; }
+/* Газ платит по массе, а не по объёму: литр пара или воздуха — это граммы
+   вещества, а канонная цена «× объём, л» задана для плотного состояния.
+   Литры приводятся к сжиженному: вода — 1000 кг/м³, воздух — 870.
+   Огонь не трогаем: у пламени платится размер, а не масса. */
+const COND_RHO={water:1000, air:870};
+function priceLitres(sp){
+  const r=resolveSpec(sp), th=THERMO[r.material], rc=COND_RHO[r.material];
+  if(!th||!rc) return {L:r.volume,gas:false};
+  const p=(PHASE_STEP[sp.phase]===undefined)?physPhase(th,Number(r.temp)):PHASE_STEP[sp.phase];
+  return p>=2?{L:r.mass/rc*1000,gas:true}:{L:r.volume,gas:false};
+}
+function kjLabel(v){ return v>=1000?`${+(v/1000).toPrecision(3)} МДж`:`${+v.toPrecision(3)} кДж`; }
+
+function nodeRole(spec){
+  if(!spec) return "empty";
+  const mat=resolveSpec(spec).material;
+  if(spec.action==="compress") return "shrink";
+  if(mat==="ether") return "stab";
+  if(spec.action==="move") return "impulse";
+  if(spec.action==="create"||spec.action==="hold") return "substance";
+  return "service";
+}
+const ROLE_RU={substance:"вещество",impulse:"импульс",stab:"стабилизация",
+               shrink:"сжатие",service:"служебный",empty:"пустой"};
+
+function circleEnergy(cfg){
+  cfg=cfg||{nodes:S.nodes,slots:S.slots,repack:S.repack};
+  const specs=[];
+  for(let i=0;i<cfg.nodes;i++) specs.push(cfg.slots[i]||null);
+
+  // что создано и что осталось после сжатия. Огонь — энергия: массы объекту
+  // не даёт, пока есть вещество. Без вещества объектом становится само пламя.
+  let madeKg=0, madeL=0, fireKg=0, fireL=0;
+  specs.forEach(sp=>{ if(sp&&nodeRole(sp)==="substance"){
+    const r=resolveSpec(sp);
+    if(r.material==="fire"){ fireKg+=r.mass; fireL+=r.volume; }
+    else { madeKg+=r.mass; madeL+=r.volume; } }});
+  if(madeKg===0&&fireKg>0){ madeKg=fireKg; madeL=fireL; }
+  // сжатие само по себе энергии не стоит — платят за созданное и выброшенное
+  const shrink=specs.find(sp=>sp&&nodeRole(sp)==="shrink");
+  const finalKg = shrink?Number(shrink.mass):madeKg;
+  const finalRho= shrink?(Number(shrink.density)||1000):(madeL>0?madeKg/madeL*1000:1000);
+  const wasteKg = Math.max(0, madeKg-finalKg);
+
+  const rows=[]; let sum=0, carry=0;
+  specs.forEach((sp,i)=>{
+    const role=nodeRole(sp);
+    let e=0, note="";
+    if(sp){
+      const r=resolveSpec(sp);
+      // объект, за который платят импульс и стабилизация
+      const objKg = finalKg>0?finalKg:r.mass;
+      const objRho= finalKg>0?finalRho:(r.density||1000);
+      if(role==="substance"){
+        const fm=formMul(sp), h=heatKJ(sp), tc=h.kj/KJ_PER_UNIT;
+        const pl=priceLitres(sp);
+        e=mixCost(r.material)*(sp.action==="create"?2:1)*pl.L*fm+tc;
+        const bits=[pl.gas?`${+r.volume.toFixed(0)} л газа ≈ ${+pl.L.toFixed(2)} л по массе`:`${+r.volume.toFixed(2)} л`];
+        if(fm>1) bits.push(`форма ×${fm}`);
+        if(h.kj>0) bits.push(`${r.temp>=T_AMBIENT?"нагрев":"охлаждение"} ${kjLabel(h.kj)}`);
+        if(h.against) bits.push(`фаза против природы — держит эфир`);
+        note=bits.join(" · ");
+      }
+      else if(role==="impulse"){
+        e=0.5*objKg*r.speed*r.speed/1000/ETA_KIN;   // кДж
+        note=r.speed>0?`${massLabel(+objKg.toPrecision(3))} · ${r.speed} м/с`:"скорость не задана";
+      }
+      else if(role==="stab"){
+        e=0.5*(objKg*1000/100)*(1000/objRho)*tierMul();
+        note=`${massLabel(+objKg.toPrecision(3))} · ρ ${+objRho.toPrecision(3)}`;
+      }
+      if(cfg.repack&&role!=="stab") e=0;
+    }
+    if(e>0) carry++;
+    sum+=e;
+    rows.push({i,role,mat:sp?(MATERIALS[resolveSpec(sp).material]?.n||"—"):"—",e,note});
+  });
+
+  const slots=cfg.nodes;
+  const slotMul=Math.pow(1.2,slots);
+  const orderMul=(S.orderOK===false)?1.35:1;
+  const total=sum*slotMul*orderMul;
+  const need=Math.max(carry,1);
+  const lean=sum*Math.pow(1.2,need);
+  const stabTerm=rows.reduce((s,r)=>s+(r.role==="stab"?r.e:0),0);
+  const upkeep=isAlive()?stabTerm*0.1:0;
+  return {rows,sum,slots,need,slotMul,orderMul,total,lean,upkeep,
+          alive:isAlive(),madeKg,finalKg,wasteKg,finalRho,repack:!!cfg.repack,
+          waste:lean>0?(total/lean-1)*100:0};
+}
+
+/* ---------- банк кругов ---------- */
+function snapshot(){
+  return {nodes:S.nodes,slots:JSON.parse(JSON.stringify(S.slots)),
+          core:S.core,repack:!!S.repack,lush:S.lush,mid:S.mid};
+}
+function allCircles(){ return [...(S.bank||[]),snapshot()]; }
+
+function stackCost(){
+  const list=allCircles().map((c,i)=>({i,c,e:circleEnergy(c)}));
+  // одиночка платит 2.5^k — выгодно ставить дорогое первым
+  const order=[...list].sort((a,b)=>b.e.total-a.e.total);
+  let solo=0; order.forEach((x,k)=>{ solo+=x.e.total*Math.pow(2.5,k); });
+  let worst=0; [...order].reverse().forEach((x,k)=>{ worst+=x.e.total*Math.pow(2.5,k); });
+  const dist=list.reduce((s,x)=>s+x.e.total,0);
+  const nodes=list.reduce((s,x)=>s+x.c.nodes,0);
+  const raw=list.reduce((s,x)=>s+x.e.sum,0);
+  const merged=(nodes<=7)?raw*Math.pow(1.2,nodes)*(S.orderOK===false?1.35:1):null;
+  return {list,solo,worst,dist,merged,nodes,heaviest:order[0]?order[0].e.total:0};
+}
+
+function fmt(v){ return v>=1000?Math.round(v).toLocaleString("ru-RU"):(+v.toFixed(1)).toString(); }
+
+function energyPanel(){
+  const E=circleEnergy();
+  const f=fmt;
+  let h=`<table class="en">`;
+  E.rows.forEach(r=>{
+    h+=`<tr><td class="en-n">${r.i+1}</td>`
+      +`<td class="en-m">${r.mat}<i>${ROLE_RU[r.role]}${r.note?" · "+r.note:""}</i></td>`
+      +`<td class="en-v${r.e>0?"":" en-zero"}">${r.e>0?f(r.e):"—"}</td></tr>`;
+  });
+  h+=`</table><div class="en-tot">`
+   +`<div><span>сумма</span><b>${f(E.sum)}</b></div>`
+   +`<div><span>слотов ${E.slots} · 1.2^n</span><b>×${E.slotMul.toFixed(2)}</b></div>`;
+  if(E.orderMul>1) h+=`<div class="en-bad"><span>порядок нарушен</span><b>×1.35</b></div>`;
+  if(E.repack) h+=`<div><span>переупаковка</span><b>только связывание</b></div>`;
+  h+=`<div class="en-big"><span>этот круг</span><b>${f(E.total)}</b></div>`;
+  h+=`<div><span>ступень порядка</span><b>${tierName()} ×${tierMul()}</b></div>`;
+  const nStab=E.rows.filter(r=>r.role==="stab").length;
+  if(nStab>1) h+=`<div class="en-bad"><span>узлов эфира</span><b>${nStab} — платится дважды</b></div>`;
+  if(!E.rows.some(r=>r.role==="shrink")&&E.madeKg>0)
+    h+=`<div><span>сжатия нет</span><b>масса = созданной</b></div>`;
+  h+=`<div><span>создано / осталось</span><b>${E.madeKg.toFixed(1)} → ${E.finalKg.toFixed(1)} кг</b></div>`;
+  if(E.wasteKg>0.01) h+=`<div class="en-bad"><span>сожжено впустую</span><b>${E.wasteKg.toFixed(1)} кг</b></div>`;
+  if(E.alive) h+=`<div class="en-bad"><span>удержание живого</span><b>${(E.upkeep/10).toFixed(1)} мл/ч</b></div>`;
+  h+=`</div>`
+   +`<div class="en-lean"><div><span>слотов работает</span><b>${E.need} из ${E.slots}</b></div>`
+   +`<div><span>то же без лишних</span><b>${f(E.lean)}</b></div>`
+   +`<div class="en-waste"><span>переплата</span><b>+${Math.round(E.waste)}%</b></div></div>`;
+  return h;
+}
+
+function bankPanel(){
+  const S_=S, f=fmt;
+  let h=`<div class="bank">`;
+  (S_.bank||[]).forEach((c,i)=>{
+    const e=circleEnergy(c);
+    h+=`<div class="bk"><span class="bk-i">${i+1}</span>`
+      +`<span class="bk-n">${c.nodes} узла${c.repack?" · переупак":""}</span>`
+      +`<span class="bk-v">${f(e.total)}</span>`
+      +`<button class="bk-x" data-load="${i}" title="загрузить">↺</button>`
+      +`<button class="bk-x" data-del="${i}" title="убрать">×</button></div>`;
+  });
+  const cur=circleEnergy();
+  h+=`<div class="bk bk-cur"><span class="bk-i">•</span>`
+    +`<span class="bk-n">${S_.nodes} узла · текущий${S_.repack?" · переупак":""}</span>`
+    +`<span class="bk-v">${f(cur.total)}</span><span></span><span></span></div></div>`;
+
+  const T=stackCost();
+  h+=`<div class="cmp">`
+   +`<div class="cmp-h">кругов ${T.list.length} · узлов ${T.nodes}</div>`
+   +`<div class="cmp-r"><span>один маг, дорогое первым</span><b>${f(T.solo)}</b></div>`
+   +`<div class="cmp-r dim"><span>он же, порядок наоборот</span><b>${f(T.worst)}</b></div>`
+   +`<div class="cmp-r good"><span>по магу на круг</span><b>${f(T.dist)}</b></div>`;
+  if(T.merged!==null)
+    h+=`<div class="cmp-r"><span>всё одним кругом (${T.nodes} узлов)</span><b>${f(T.merged)}</b></div>`;
+  else
+    h+=`<div class="cmp-r dim"><span>одним кругом</span><b>нельзя, ${T.nodes} > 7</b></div>`;
+  if(T.list.length>1){
+    const best=Math.min(T.solo,T.dist,T.merged===null?Infinity:T.merged);
+    const gain=T.merged!==null?Math.round((1-best/T.merged)*100):null;
+    h+=`<div class="cmp-r verdict"><span>тяжелейший на одного</span><b>${f(T.heaviest)}</b></div>`;
+    if(gain!==null&&gain>0)
+      h+=`<div class="cmp-r verdict"><span>выигрыш дробления</span><b>−${gain}%</b></div>`;
+  }
+  return h+`</div>`;
+}
+
+
+/* ===================== ЭТЕР-ВЕНА =====================
+   Этер — жидкость в третьем сосуде (тоньше волоса, вдоль артерий и вен).
+   ПРЕДЛОЖЕНО, НЕ КАНОН — решения автора 2026-10-02. Исключений нет:
+   одни правила для всех, разница только в тренировке.
+
+   ОБЪЁМ  (мл)    — объём ∝ d² × длина сети; d ≤ 100 мкм («тоньше волоса»).
+                    Тренировка ветвит сеть, как капилляры у спортсмена:
+                    у новичка ~60 км, у Хранителя за десятилетия — ~450 км.
+   ПРОТОК (мл/с)  — ∝ d⁴ (Пуазейль) × число параллельных ветвей.
+   ГУСТОТА (кДж/мл) — тренировка сгущает Этер, как мышцу. Потолок —
+                    ~35 кДж/мл, плотность жира: гуще тело не запасает.
+   ВОССТАНОВЛЕНИЕ — из еды. Тренированные едят больше, но КПД синтеза
+                    падает с густотой: 45% → 25%. Плата за силу.
+   ПЕРЕРАСХОД     — сверх резерва маг жжёт собственный жир, КПД 50%,
+                    не больше половины резерва: дальше рвутся сосуды.
+   Ориентир: Хранитель (Кайрен) — минимум 5 огненных смерчей по ~20 МДж.
+   ------------------------------------------------------- */
+const FAT_KJ_KG=37000, FAT_ETA=0.5, OVERDRAW_MAX=0.5;
+function synthEta(G){ return Math.max(0.1,0.45-0.01*(G-15)); }
+//  id         имя                    мл     мл/с  кДж/мл  еда сверху, ккал/сут
+const CASTERS=[
+  ["plain",  "обыватель",              40,    1,  15,  1000],
+  ["student","студент",                95,    5,  20,  1500],
+  ["grad",   "выпускник",             145,   11,  25,  2000],
+  ["instr",  "инструктор",            230,   28,  30,  2500],
+  ["keeper", "Хранитель Этера",      3000,  660,  35,  5000],
+  ["top",    "Хранитель · Леонхард", 4300,  950,  35,  5000]
+];
+function recoverLabel(kj,G,kcal){
+  const h=kj/(kcal*4.184*synthEta(G))*24;
+  return h<1?`${Math.round(h*60)} мин`:(h<48?`${+h.toFixed(1)} ч`:`${+(h/24).toFixed(1)} сут`);
+}
+
+function veinPanel(){
+  const T=stackCost();
+  const c=CASTERS.find(x=>x[0]===(S.caster||"student"))||CASTERS[1];
+  const [,name,cap,flow,G,kcal]=c;
+  const sec=Math.max(0.5,S.cast||4);
+  const res=cap*G;                                  // резерв, кДж
+  const over=Math.max(0,T.solo-res);                // сверх резерва, кДж
+  const fatKg=over/(FAT_KJ_KG*FAT_ETA);
+  const mlSolo=T.solo/G, mlOne=T.heaviest/G;
+  const needFlow=mlSolo/sec;
+  const pct=Math.round(T.solo/res*100);
+  const bad=v=>v?' class="cmp-r verdict"':' class="cmp-r"';
+  let h=`<div class="cmp">`
+   +`<div class="cmp-h">${name} · ${cap} мл · ${flow} мл/с · ${G} кДж/мл</div>`
+   +`<div class="cmp-r dim"><span>полный резерв</span><b>${kjLabel(res)} · копится ${recoverLabel(res,G,kcal)}</b></div>`
+   +`<div class="cmp-r"><span>стоит</span><b>${mlSolo.toFixed(1)} мл · ${kjLabel(T.solo)}</b></div>`
+   +`<div${bad(pct>100)}><span>от резерва</span><b>${pct}%</b></div>`
+   +`<div${bad(needFlow>flow)}><span>нужен проток</span><b>${needFlow.toFixed(1)} мл/с</b></div>`;
+  if(over>0)
+    h+=`<div class="cmp-r verdict"><span>сверх резерва — жир</span><b>${fatKg.toFixed(2)} кг</b></div>`;
+  h+=`<div class="cmp-r"><span>восстановить</span><b>${recoverLabel(Math.min(T.solo,res),G,kcal)}${over>0?" + отъесться":""}</b></div>`;
+  if(T.list.length>1)
+    h+=`<div class="cmp-r"><span>если раздать по магам</span><b>${mlOne.toFixed(1)} мл на тяжелейшего</b></div>`;
+  const verdict = over>res*OVERDRAW_MAX ? "не вытянет: сосуды порвутся"
+                : over>0 ? "вытянет телом"
+                : needFlow>flow ? "вена не продавит" : "тянет";
+  h+=`<div class="cmp-r verdict"><span>вердикт</span><b>${verdict}</b></div></div>`;
+  return h;
+}
+
+/* ===================== состояние ===================== */
+const OPEN=[3,5,7],SHUT=[4,6,8];
+const S={nodes:7,unlocked:false,color:"#7fd4ff",alpha:false,size:2000,
+  stroke:1,nodeR:1,coreR:1,webR:1,band:48,ticks:72,rot:0,bandStart:0,lush:4,mid:3,flora:4,nodeOrn:3,extraRings:4,filigree:5,halo:4,microGlyphs:3,decorOpacity:10,glow:false,orderOK:true,serial:0,tier:0,bank:[],repack:false,caster:'student',cast:4,
+  slots:Array.from({length:8},(_,i)=>baseSpec(i)),core:"draw",
+  L:{construction:{on:true,op:40},rings:{on:true,op:100},ornament:{on:true,op:88},band:{on:true,op:100},
+     web:{on:true,op:85},nodes:{on:true,op:100},core:{on:true,op:100}}};
+const LNAMES={construction:"Опорная геометрия",rings:"Кольца",ornament:"Украшения",band:"Протокольный пояс",
+  web:"Сеть хорд",nodes:"Сигнатуры узлов",core:"Ядро"};
+
+/* ===================== слои ===================== */
+function layers(){
+  const sz=S.size,C=sz/2,col=S.color,faint="#2f5f7a";
+  // FIT — поле под наружные украшения. Заодно круг не режется углами при повороте.
+  const FIT=0.93;
+  const R_out=sz*0.470*FIT,R_out2=sz*0.452*FIT,R_bo=sz*0.436*FIT,R_bi=sz*0.386*FIT;
+  const R_node=sz*0.330*FIT*S.webR,R_core=sz*0.088*FIT*S.coreR;
+  const sw=k=>(k*S.stroke).toFixed(2);
+  const dsw=k=>((k*S.stroke)*(1.05+0.60*S.stroke)).toFixed(2);
+  const odec=v=>Math.max(0,Math.min(1, Number(v)+(S.decorOpacity/10)*(1-Number(v)))).toFixed(3);
+  const P=(r,a)=>[C+r*Math.cos(a),C+r*Math.sin(a)];
+  const base=-Math.PI/2+S.rot*Math.PI/180;
+  const ang=[...Array(S.nodes)].map((_,k)=>base+2*Math.PI*k/S.nodes);
+  const L={};
+  let g="";
+  const tri=[0,1,2].map(k=>P(R_node,base+2*Math.PI*k/3));
+  g+=`<polygon points="${tri.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="${faint}" stroke-width="${sw(2.5)}" stroke-dasharray="14 10"/>`;
+  if(S.nodes>3){const sq=[0,1,2,3].map(k=>P(R_node,base+2*Math.PI*k/4));
+    g+=`<polygon points="${sq.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="${faint}" stroke-width="${sw(2.5)}" stroke-dasharray="6 12"/>`;}
+  ang.forEach(a=>{const [x1,y1]=P(R_core,a),[x2,y2]=P(R_bi,a);
+    g+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${faint}" stroke-width="${sw(1.6)}"/>`});
+  L.construction=g;
+
+  g="";
+  [[R_out,4],[R_out2,2],[R_bo,2],[R_bi,2],[R_node*1.12,1.4],[R_core*1.86,1.2]].forEach(([r,w])=>{
+    g+=`<circle cx="${C}" cy="${C}" r="${r.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(w)}"/>`});
+  g+=`<circle cx="${C}" cy="${C}" r="${(R_out+sz*0.010).toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(1.1)}" opacity="0.32" stroke-dasharray="10 16"/>`;
+  g+=`<circle cx="${C}" cy="${C}" r="${(R_bo-sz*0.012).toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(0.85)}" opacity="0.28" stroke-dasharray="7 9"/>`;
+  g+=`<circle cx="${C}" cy="${C}" r="${(R_bi+sz*0.012).toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(0.9)}" opacity="0.24" stroke-dasharray="4 12"/>`;
+  for(let k=0;k<S.ticks;k++){
+    const a=2*Math.PI*k/S.ticks,lg=(k%6===0),mg=(k%3===0);
+    const [x1,y1]=P(R_out2,a),[x2,y2]=P(R_out2-(lg?26:(mg?18:12)),a);
+    g+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${sw(lg?2.4:(mg?1.6:1.2))}" opacity="0.75"/>`;
+    if(k%2===0){
+      const [y1a,z1a]=P(R_bo+sz*0.004,a),[y2a,z2a]=P(R_bo-sz*0.006,a);
+      g+=`<line x1="${y1a.toFixed(1)}" y1="${z1a.toFixed(1)}" x2="${y2a.toFixed(1)}" y2="${z2a.toFixed(1)}" stroke="${col}" stroke-width="${sw(0.7)}" opacity="0.44"/>`;
+    }
+    if(k%4===0){
+      const [u1,v1]=P(R_bi+sz*0.006,a),[u2,v2]=P(R_bi-sz*0.010,a);
+      g+=`<line x1="${u1.toFixed(1)}" y1="${v1.toFixed(1)}" x2="${u2.toFixed(1)}" y2="${v2.toFixed(1)}" stroke="${col}" stroke-width="${sw(0.65)}" opacity="0.36"/>`;
+    }
+  }
+  L.rings=g;
+
+  // ============ УКРАШЕНИЯ ============
+  // Ничего не значит. Всё симметрично, всё детерминировано.
+  // Ступени накапливаются по ползунку «Пышность» (S.lush).
+  g="";
+  {
+  const LUSH=(S.lush===undefined?4:S.lush);
+  const f1=v=>Number(v).toFixed(1);
+  const pth=(d,w,op,dash)=>`<path d="${d}" fill="none" stroke="${col}" stroke-width="${dsw(w)}" opacity="${odec(op)}"${dash?` stroke-dasharray="${dash}"`:""}/>`;
+  const ring=(r,w,op,dash)=>`<circle cx="${C}" cy="${C}" r="${f1(r)}" fill="none" stroke="${col}" stroke-width="${dsw(w)}" opacity="${odec(op)}"${dash?` stroke-dasharray="${dash}"`:""}/>`;
+  const seg=(p0,p1,w,op)=>pth(`M ${f1(p0[0])},${f1(p0[1])} L ${f1(p1[0])},${f1(p1[1])}`,w,op);
+
+  // фестоны — гирлянда дуг по кольцу
+  const scallop=(r,n,bulge,w,op,ph)=>{
+    ph=ph||0; let d="";
+    for(let i=0;i<n;i++){
+      const a0=base+ph+2*Math.PI*i/n,a1=base+ph+2*Math.PI*(i+1)/n,am=(a0+a1)/2;
+      const p0=P(r,a0),pm=P(r+bulge,am),p1=P(r,a1);
+      d+=(i?"":`M ${f1(p0[0])},${f1(p0[1])} `)+`Q ${f1(pm[0])},${f1(pm[1])} ${f1(p1[0])},${f1(p1[1])} `;
+    }
+    return pth(d,w,op);
+  };
+
+  // звёздчатый многоугольник {n/k}
+  const starPoly=(r,n,k,w,op,ph)=>{
+    ph=ph||0; if(n<5||k<2||k>=n/2) return "";
+    const pts=[...Array(n)].map((_,i)=>P(r,base+ph+2*Math.PI*i/n));
+    const seen=new Set(); let out="";
+    for(let s0=0;s0<n;s0++){
+      if(seen.has(s0)) continue;
+      let i=s0; const chain=[];
+      do{ chain.push(pts[i]); seen.add(i); i=(i+k)%n; }while(i!==s0);
+      out+=pth("M "+chain.map(p=>f1(p[0])+","+f1(p[1])).join(" L ")+" Z",w,op);
+    }
+    return out;
+  };
+
+  // лепесток
+  const petal=(r0,r1,a,spread,w,op)=>{
+    const p0=P(r0,a),pT=P(r1,a),pL=P((r0+r1)*0.52,a-spread),pR=P((r0+r1)*0.52,a+spread);
+    return pth(`M ${f1(p0[0])},${f1(p0[1])} C ${f1(pL[0])},${f1(pL[1])} ${f1(pL[0])},${f1(pL[1])} ${f1(pT[0])},${f1(pT[1])} `
+      +`C ${f1(pR[0])},${f1(pR[1])} ${f1(pR[0])},${f1(pR[1])} ${f1(p0[0])},${f1(p0[1])} Z`,w,op);
+  };
+
+  // завиток
+  const curl=(r,a,side,scale,w,op)=>{
+    const p0=P(r,a),p1=P(r+sz*0.020*scale,a+side*0.06),
+          p2=P(r+sz*0.038*scale,a+side*0.16),p3=P(r+sz*0.012*scale,a+side*0.28);
+    return pth(`M ${f1(p0[0])},${f1(p0[1])} C ${f1(p1[0])},${f1(p1[1])} ${f1(p2[0])},${f1(p2[1])} ${f1(p3[0])},${f1(p3[1])}`,w,op);
+  };
+
+  // ромб, ориентированный по радиусу
+  const diamond=(r,a,wd,ht,w,op)=>{
+    const [x,y]=P(r,a),c=Math.cos(a),s=Math.sin(a);
+    const pts=[[x+c*ht,y+s*ht],[x-s*wd,y+c*wd],[x-c*ht,y-s*ht],[x+s*wd,y-c*wd]];
+    return `<polygon points="${pts.map(p=>f1(p[0])+","+f1(p[1])).join(" ")}" fill="none" stroke="${col}" stroke-width="${dsw(w)}" opacity="${odec(op)}"/>`;
+  };
+
+  // четырёхлучевая искра
+  const spark=(r,a,scale,op)=>{
+    const [x,y]=P(r,a),L=sz*0.010*scale,d=sz*0.0045*scale;
+    return `<g opacity="${odec(op)}">`
+      +`<path d="M ${f1(x-L)},${f1(y)} L ${f1(x+L)},${f1(y)} M ${f1(x)},${f1(y-L)} L ${f1(x)},${f1(y+L)}" stroke="${col}" stroke-width="${dsw(0.8)}" fill="none"/>`
+      +`<polygon points="${f1(x)},${f1(y-d)} ${f1(x+d)},${f1(y)} ${f1(x)},${f1(y+d)} ${f1(x-d)},${f1(y)}" fill="${col}"/></g>`;
+  };
+
+  // трёхлопастный наконечник наружу
+  const finial=(r,a,scale,w,op)=>{
+    const t=sz*0.030*scale;
+    const tip=P(r+t*1.5,a), l0=P(r,a-0.045), r0=P(r,a+0.045);
+    const lb=P(r+t*0.55,a-0.075), rb=P(r+t*0.55,a+0.075);
+    const lw=P(r+t*0.40,a-0.115), rw=P(r+t*0.40,a+0.115);
+    return pth(`M ${f1(l0[0])},${f1(l0[1])} Q ${f1(lb[0])},${f1(lb[1])} ${f1(tip[0])},${f1(tip[1])} `
+      +`Q ${f1(rb[0])},${f1(rb[1])} ${f1(r0[0])},${f1(r0[1])}`,w,op)
+      +pth(`M ${f1(l0[0])},${f1(l0[1])} Q ${f1(lw[0])},${f1(lw[1])} ${f1(P(r+t*0.10,a-0.145)[0])},${f1(P(r+t*0.10,a-0.145)[1])}`,w*0.7,op*0.8)
+      +pth(`M ${f1(r0[0])},${f1(r0[1])} Q ${f1(rw[0])},${f1(rw[1])} ${f1(P(r+t*0.10,a+0.145)[0])},${f1(P(r+t*0.10,a+0.145)[1])}`,w*0.7,op*0.8);
+  };
+
+  /* ============ РАСТИТЕЛЬНЫЙ НАБОР ============
+     Фигуры рисуются в локальной системе и разворачиваются по радиусу.
+     Ось листа — +X, поэтому поворот равен углу в градусах. */
+  const at=(r,a,body)=>{
+    const [x,y]=P(r,a);
+    return `<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(a*180/Math.PI)})">${body}</g>`;
+  };
+  const lpth=(d,w,op)=>`<path d="${d}" fill="none" stroke="${col}" stroke-width="${dsw(w)}" opacity="${odec(op)}" stroke-linecap="round"/>`;
+
+  // аканф: остриё со встречными долями по обе стороны
+  const acanthus=(r,a,L,w,op,lobes,flip)=>{
+    lobes=lobes||3; const s=flip?-1:1;
+    let d=lpth(`M 0,0 C ${f1(L*0.34)},${f1(-s*L*0.05)} ${f1(L*0.72)},${f1(-s*L*0.03)} ${f1(L)},0`,w,op);
+    for(let k=0;k<lobes;k++){
+      const t0=0.10+k*0.24, t1=t0+0.30, h=L*(0.30-k*0.062);
+      for(const sg of [1,-1]){
+        const x0=L*t0,x1=L*Math.min(t1,0.98);
+        d+=lpth(`M ${f1(x0)},0 C ${f1(x0+(x1-x0)*0.18)},${f1(sg*h)} `
+               +`${f1(x1-(x1-x0)*0.40)},${f1(sg*h*0.86)} ${f1(x1)},0`,w*0.82,op*0.92);
+        d+=lpth(`M ${f1(x0+(x1-x0)*0.28)},${f1(sg*h*0.16)} L ${f1(x1-(x1-x0)*0.30)},${f1(sg*h*0.55)}`,w*0.45,op*0.55);
+      }
+    }
+    return at(r,a,d);
+  };
+
+  // волюта: логарифмическая спираль
+  const volute=(r,a,L,w,op,side,turns)=>{
+    turns=turns||2.1; const s=side||1;
+    const b=0.30, steps=52; let d="";
+    for(let i=0;i<=steps;i++){
+      const th=turns*2*Math.PI*i/steps;
+      const rr=L*Math.exp(-b*th);
+      const x=L-rr*Math.cos(th), y=s*rr*Math.sin(th);
+      d+=(i?"L ":"M ")+f1(x)+","+f1(y)+" ";
+    }
+    return at(r,a,lpth(d,w,op));
+  };
+
+  // бутон: капля с остриём и внутренним контуром
+  const bud=(r,a,L,w,op)=>{
+    const W=L*0.42;
+    let d=lpth(`M 0,0 C ${f1(L*0.30)},${f1(-W)} ${f1(L*0.78)},${f1(-W*0.62)} ${f1(L)},0 `
+              +`C ${f1(L*0.78)},${f1(W*0.62)} ${f1(L*0.30)},${f1(W)} 0,0`,w,op);
+    d+=lpth(`M ${f1(L*0.16)},0 C ${f1(L*0.40)},${f1(-W*0.50)} ${f1(L*0.72)},${f1(-W*0.34)} ${f1(L*0.86)},0 `
+           +`C ${f1(L*0.72)},${f1(W*0.34)} ${f1(L*0.40)},${f1(W*0.50)} ${f1(L*0.16)},0`,w*0.55,op*0.65);
+    return at(r,a,d);
+  };
+
+  // пальметта: веер остриёв с завитками у основания
+  const palmette=(r,a,L,w,op,leaves)=>{
+    leaves=leaves||5; let d="";
+    for(let k=0;k<leaves;k++){
+      const f=(k-(leaves-1)/2)/((leaves-1)/2||1);
+      const sp=f*0.62, len=L*(1-Math.abs(f)*0.42);
+      const tx=len*Math.cos(sp), ty=len*Math.sin(sp);
+      d+=lpth(`M 0,0 C ${f1(len*0.32*Math.cos(sp*0.5))},${f1(len*0.32*Math.sin(sp*0.5)-len*0.13)} `
+             +`${f1(len*0.74*Math.cos(sp*0.8))},${f1(len*0.74*Math.sin(sp*0.8)-len*0.07)} ${f1(tx)},${f1(ty)}`,w,op);
+      d+=lpth(`M 0,0 C ${f1(len*0.32*Math.cos(sp*0.5))},${f1(len*0.32*Math.sin(sp*0.5)+len*0.13)} `
+             +`${f1(len*0.74*Math.cos(sp*0.8))},${f1(len*0.74*Math.sin(sp*0.8)+len*0.07)} ${f1(tx)},${f1(ty)}`,w*0.7,op*0.7);
+    }
+    d+=lpth(`M ${f1(-L*0.10)},${f1(-L*0.16)} C ${f1(-L*0.30)},${f1(-L*0.22)} ${f1(-L*0.30)},${f1(-L*0.02)} ${f1(-L*0.12)},${f1(-L*0.04)}`,w*0.6,op*0.75);
+    d+=lpth(`M ${f1(-L*0.10)},${f1(L*0.16)} C ${f1(-L*0.30)},${f1(L*0.22)} ${f1(-L*0.30)},${f1(L*0.02)} ${f1(-L*0.12)},${f1(L*0.04)}`,w*0.6,op*0.75);
+    return at(r,a,d);
+  };
+
+  // дротик с бородками
+  const dart=(r,a,L,w,op)=>{
+    const W=L*0.26;
+    let d=lpth(`M 0,0 L ${f1(L)},0`,w,op);
+    d+=lpth(`M ${f1(L)},0 L ${f1(L*0.62)},${f1(-W)} M ${f1(L)},0 L ${f1(L*0.62)},${f1(W)}`,w*0.8,op*0.9);
+    d+=lpth(`M ${f1(L*0.34)},0 L ${f1(L*0.12)},${f1(-W*0.72)} M ${f1(L*0.34)},0 L ${f1(L*0.12)},${f1(W*0.72)}`,w*0.55,op*0.6);
+    return at(r,a,d);
+  };
+
+  const N=S.nodes, half=Math.PI/N;
+  const R_deco1=R_out+sz*0.006, R_deco2=(R_bi+R_node)/2, R_deco3=(R_core+R_node)/2;
+  const XR=(S.extraRings===undefined?4:S.extraRings);
+  const FIL=(S.filigree===undefined?5:S.filigree);
+  const HALO=(S.halo===undefined?4:S.halo);
+  const MICRO=(S.microGlyphs===undefined?3:S.microGlyphs);
+  const FLORA=(S.flora===undefined?4:S.flora);
+
+  /* --- пролог: дополнительные декоративные кольца --- */
+  if(XR>=1){
+    for(let i=1;i<=XR;i++) {
+      const t=i/(XR+1);
+      const rA=R_out2-(R_out2-R_bo)*t*0.96;
+      const rB=R_bi+(R_node*1.10-R_bi)*t*0.92;
+      const rC=R_core*1.98+(R_node*0.86-R_core*1.98)*t*0.60;
+      const op=0.10+0.028*i, w=0.28+0.07*Math.max(1,XR-i+1);
+      g+=ring(rA,w,op,(i%3===0?"2 7":(i%2===0?"5 10":"")));
+      if(i<=Math.ceil(XR*0.9)) g+=ring(rB,w*0.94,op*0.88,(i%2?"3 8":""));
+      if(i<=Math.ceil(XR*0.7)) g+=ring(rC,w*0.88,op*0.72,(i%2?"2 6":""));
+      const tickN=Math.max(24,N*(6+i*2));
+      for(let k=0;k<tickN;k++){
+        if(k%(2+(i%3))) continue;
+        const a=base+2*Math.PI*k/tickN;
+        g+=seg(P(rA,a),P(rA+sz*(0.0024+0.0008*i),a),0.22+0.03*i,0.06+0.01*i);
+      }
+    }
+  }
+
+  /* --- ступень 1: стопка колец и штриховой пояс --- */
+  g+=ring(R_out*1.012,0.9,0.30)+ring(R_out*0.988,0.6,0.22)
+   +ring(R_bi*0.965,0.8,0.34,"3 7")+ring(R_node*1.115,0.7,0.26)
+   +ring(R_node*0.885,0.6,0.20,"2 6")+ring(R_core*1.95,0.8,0.26,"5 9");
+  {const n=Math.max(96,S.band*2);
+   for(let k=0;k<n;k++){const a=base+2*Math.PI*k/n;
+     g+=seg(P(R_node*1.115,a),P(R_node*1.115+sz*0.007*(k%4?1:1.9),a),0.55,k%4?0.22:0.42);}}
+
+  /* --- ступень 2: фестоны --- */
+  if(LUSH>=2){
+    g+=scallop(R_bi*0.938,N*4,-sz*0.014,0.85,0.42)
+     +scallop(R_node*1.155,N*3,sz*0.017,0.80,0.36,half)
+     +scallop(R_core*2.30,N*2,sz*0.020,0.75,0.30);
+  }
+
+  /* --- ступень 3: звёздчатые решётки --- */
+  if(LUSH>=3){
+    g+=starPoly(R_node*0.985,N,2,1.05,0.34)
+     +starPoly(R_node*0.760,N,3,0.90,0.26,half)
+     +starPoly(R_bi*0.900,N,2,0.70,0.18,half);
+  }
+
+  /* --- ступень 4: розетка ядра --- */
+  if(LUSH>=1){
+    const pc=N*2;
+    for(let i=0;i<pc;i++) g+=petal(R_core*0.80,R_core*1.86,base+2*Math.PI*i/pc,0.15,0.95,0.46);
+    for(let i=0;i<pc;i++) g+=petal(R_core*0.58,R_core*1.28,base+Math.PI/pc+2*Math.PI*i/pc,0.12,0.80,0.32);
+    if(LUSH>=4) for(let i=0;i<pc*2;i++) g+=petal(R_core*1.90,R_core*2.42,base+2*Math.PI*i/(pc*2),0.07,0.65,0.24);
+    g+=ring(R_core*1.72,0.9,0.26,"6 9");
+  }
+
+  /* --- ступень 5: наконечники, завитки, медальоны --- */
+  if(LUSH>=4){
+    ang.forEach(a=>{
+      g+=finial(R_deco1,a,1,1.05,0.62);
+      g+=curl(R_deco1-sz*0.004,a-half*0.52,1,0.95,0.85,0.40)
+       +curl(R_deco1-sz*0.004,a+half*0.52,-1,0.95,0.85,0.40);
+      g+=diamond(R_bi*0.965,a,sz*0.0055,sz*0.0105,0.85,0.52);
+    });
+    // медальоны между узлами
+    ang.forEach((a,k)=>{
+      const am=a+half, rr=sz*0.019;
+      const [x,y]=P(R_deco2,am);
+      g+=`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(rr)}" fill="none" stroke="${col}" stroke-width="${sw(0.95)}" opacity="${odec(0.50)}"/>`
+       +`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(rr*1.34)}" fill="none" stroke="${col}" stroke-width="${sw(0.6)}" opacity="${odec(0.28)}" stroke-dasharray="3 5"/>`;
+      for(let j=0;j<4;j++) g+=diamond(R_deco2+rr*1.62,am+(j-1.5)*0.055,sz*0.0028,sz*0.005,0.7,0.34);
+    });
+  }
+
+  /* --- вставка: микросигилы, чтобы по кольцам было больше "языка" --- */
+  if(MICRO>=1){
+    const belts=[];
+    belts.push([R_out2-(R_out2-R_bo)*0.55, N*(8+MICRO), sz*0.0105, "MXA", 0.20]);
+    if(MICRO>=2) belts.push([R_bi+(R_node-R_bi)*0.22, N*(7+MICRO), sz*0.0092, "MXB", 0.18]);
+    if(MICRO>=4) belts.push([R_core*2.06, N*(6+MICRO), sz*0.0084, "MXC", 0.18]);
+    if(MICRO>=6) belts.push([R_node*1.19, N*(9+MICRO), sz*0.0098, "MXD", 0.20]);
+    if(MICRO>=8) belts.push([R_bi*0.905, N*(10+MICRO), sz*0.0078, "MXE", 0.15]);
+    belts.forEach(([rb2,cnt,sc,tag,op])=>{
+      g+=ring(rb2+sz*0.010,0.40,op*0.9)+ring(rb2-sz*0.010,0.40,op*0.9);
+      for(let k=0;k<cnt;k++){
+        const a=base+2*Math.PI*k/cnt,[x,y]=P(rb2,a);
+        g+=`<g opacity="${odec(op)}" transform="translate(${f1(x)},${f1(y)}) rotate(${f1(a*180/Math.PI+90)})">`
+          +codeGlyph(`${tag}|${k}|N${S.nodes}`,sc,0,0,sw(1.18),col)+`</g>`;
+      }
+    });
+  }
+
+  /* --- вставка: филигрань и мелкие завитки по пустотам --- */
+  if(FIL>=1){
+    const loops=N*(10+FIL*2);
+    for(let k=0;k<loops;k++){
+      const a=base+2*Math.PI*k/loops, side=(k%2?1:-1);
+      const r=R_bi*0.972 + Math.sin(k*0.7)*sz*0.0015;
+      g+=curl(r,a,side,0.22+FIL*0.055,0.38,0.06+FIL*0.015);
+    }
+  }
+  if(FIL>=3){
+    const n2=N*(6+FIL);
+    for(let k=0;k<n2;k++){
+      const a=base+2*Math.PI*k/n2;
+      g+=diamond(R_node*1.12,a,sz*0.0018,sz*0.0038,0.42,0.12+FIL*0.018);
+      if(k%2===0) g+=diamond(R_core*2.00,a+0.012,sz*0.0015,sz*0.0030,0.36,0.10+FIL*0.015);
+    }
+  }
+  if(FIL>=5){
+    for(let i=0;i<N;i++) {
+      const am=ang[i]+half;
+      g+=curl(R_deco2,am-0.060,1,0.60+FIL*0.05,0.60,0.22);
+      g+=curl(R_deco2,am+0.060,-1,0.60+FIL*0.05,0.60,0.22);
+      g+=scallop(R_deco2+sz*0.010,N*2,sz*0.008,0.34,0.10);
+    }
+  }
+
+  /* --- вставка: внешний венец и корона --- */
+  if(HALO>=1){
+    g+=ring(R_out*1.060,0.48,0.16+HALO*0.018,(HALO>=3?"8 10":""));
+    g+=scallop(R_out*1.052,N*(8+HALO),sz*(0.004+HALO*0.0008),0.50,0.15+HALO*0.017);
+  }
+  if(HALO>=3){
+    g+=scallop(R_out*1.072,N*(8+HALO),-sz*(0.002+HALO*0.0006),0.42,0.10+HALO*0.013,Math.PI/(N*(8+HALO)));
+    ang.forEach(a=>{ g+=finial(R_out*1.055,a,0.86+HALO*0.04,0.72,0.34); });
+  }
+  if(HALO>=5){
+    const ns=N*(10+HALO);
+    for(let k=0;k<ns;k++){
+      const a=base+2*Math.PI*k/ns;
+      if(k%2===0) g+=spark(R_out*1.085,a,0.46+HALO*0.03,0.16+HALO*0.024);
+      if(k%3===0) g+=diamond(R_out*1.095,a,sz*0.0022,sz*0.0048,0.45,0.14+HALO*0.018);
+    }
+  }
+  if(HALO>=7){
+    const crownN=N*(14+HALO); let d="";
+    for(let i=0;i<=crownN;i++){
+      const a=base+2*Math.PI*i/crownN;
+      const r=R_out*1.102 + Math.sin(i*Math.PI)*sz*0.001 + (i%2?1:-1)*sz*0.004;
+      const [x,y]=P(r,a); d+=(i?"L ":"M ")+f1(x)+","+f1(y)+" ";
+    }
+    g+=pth(d,0.56,0.22);
+  }
+
+  /* --- ступень 6: арки, искры, внешняя филигрань --- */
+  if(LUSH>=5){
+    ang.forEach((a,k)=>{
+      const b=ang[(k+1)%ang.length],mid=a+half;
+      const pA=P(R_deco3,a+0.06),pM=P(R_deco3+sz*0.024,mid),pB=P(R_deco3,b-0.06);
+      g+=pth(`M ${f1(pA[0])},${f1(pA[1])} Q ${f1(pM[0])},${f1(pM[1])} ${f1(pB[0])},${f1(pB[1])}`,0.85,0.32);
+      const qA=P(R_deco3*0.86,a+0.09),qM=P(R_deco3*0.86+sz*0.014,mid),qB=P(R_deco3*0.86,b-0.09);
+      g+=pth(`M ${f1(qA[0])},${f1(qA[1])} Q ${f1(qM[0])},${f1(qM[1])} ${f1(qB[0])},${f1(qB[1])}`,0.62,0.22);
+    });
+    const ns=N*6;
+    for(let k=0;k<ns;k++){const a=base+2*Math.PI*k/ns;
+      if(k%3===0) g+=spark(R_out*1.030,a,0.8,0.52);
+      if(k%6===0) g+=diamond(R_node*0.885,a,sz*0.003,sz*0.0055,0.6,0.30);}
+  }
+
+  // Декоративная геометрическая рамка. В отличие от старого простого polygon,
+  // это двойная лента с поперечными скобами, медальонами и микросигилами.
+  const ornateNgon=(r,n,ph,tag,op=0.34,symbols=true)=>{
+    ph=ph||0;
+    const gap=sz*(n===3?0.012:0.010);
+    const ro=r+gap, ri=r-gap;
+    const po=[...Array(n)].map((_,i)=>P(ro,base+ph+2*Math.PI*i/n));
+    const pi=[...Array(n)].map((_,i)=>P(ri,base+ph+2*Math.PI*i/n));
+    const pm=[...Array(n)].map((_,i)=>P(r, base+ph+2*Math.PI*i/n));
+    const polyPath=pts=>`M ${pts.map(q=>f1(q[0])+","+f1(q[1])).join(" L ")} Z`;
+    let o=pth(polyPath(po),0.82,op)+pth(polyPath(pi),0.66,op*0.92);
+
+    // Перемычки и украшенные вершины делают рамку похожей на металлическую/ритуальную вязь.
+    for(let i=0;i<n;i++){
+      o+=seg(pi[i],po[i],0.52,op*0.82);
+      const a=base+ph+2*Math.PI*i/n;
+      o+=diamond(r,a,sz*(n===3?0.0050:0.0042),sz*(n===3?0.0090:0.0075),0.58,op*0.94);
+      const [vx,vy]=pm[i],vr=sz*(n===3?0.0058:0.0048);
+      o+=`<circle cx="${f1(vx)}" cy="${f1(vy)}" r="${f1(vr)}" fill="none" stroke="${col}" stroke-width="${dsw(0.42)}" opacity="${odec(op*0.78)}"/>`;
+    }
+
+    // На каждом ребре — маленькая печать и короткие засечки между двумя линиями.
+    for(let i=0;i<n;i++){
+      const j=(i+1)%n, A=pm[i], B=pm[j];
+      const ex=B[0]-A[0],ey=B[1]-A[1],L=Math.hypot(ex,ey)||1;
+      const nx=-ey/L,ny=ex/L, angEdge=Math.atan2(ey,ex)*180/Math.PI;
+      for(const t of [0.22,0.36,0.64,0.78]){
+        const x=A[0]+ex*t,y=A[1]+ey*t;
+        const d=gap*0.72;
+        o+=pth(`M ${f1(x-nx*d)},${f1(y-ny*d)} L ${f1(x+nx*d)},${f1(y+ny*d)}`,0.34,op*0.58);
+      }
+      const mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2,mr=sz*(n===3?0.0105:0.0090);
+      o+=`<circle cx="${f1(mx)}" cy="${f1(my)}" r="${f1(mr)}" fill="${S.alpha?'none':'#05080d'}" stroke="${col}" stroke-width="${dsw(0.48)}" opacity="${odec(op*0.92)}"/>`;
+      o+=`<circle cx="${f1(mx)}" cy="${f1(my)}" r="${f1(mr*0.72)}" fill="none" stroke="${col}" stroke-width="${dsw(0.30)}" opacity="${odec(op*0.66)}"/>`;
+      if(symbols){
+        o+=`<g transform="translate(${f1(mx)},${f1(my)}) rotate(${f1(angEdge)})" opacity="${odec(op*0.94)}">`
+          +codeGlyph(`POLY|${tag}|EDGE${i}|N${S.nodes}`,mr*1.14,0,0,dsw(0.78),col)+`</g>`;
+      }
+    }
+    return o;
+  };
+
+  // Геометрические рамки нарастают постепенно вместе с «Пышностью».
+  // На 5–6 уровнях уже появляется часть вязи, поэтому на 7-м нет резкого скачка.
+  if(LUSH>=5) g+=ornateNgon(R_node*0.90,3,0,"TRIANGLE-A",0.18,LUSH>=6);
+  if(LUSH>=6) g+=ornateNgon(R_node*1.02,4,Math.PI/4,"SQUARE-A",0.20,true);
+
+  /* --- ступень 7: добавочные пояса символов и крупные многоугольники --- */
+  if(LUSH>=7){
+    const ngon=(r,n,w,op,ph)=>{
+      const pts=[...Array(n)].map((_,i)=>P(r,base+(ph||0)+2*Math.PI*i/n));
+      return `<polygon points="${pts.map(q=>f1(q[0])+","+f1(q[1])).join(" ")}" fill="none" stroke="${col}" stroke-width="${dsw(w)}" opacity="${odec(op)}"/>`;
+    };
+    // два дополнительных пояса знаков
+    [[R_bi*0.880, N*7, 0.022, "RA"],[R_node*1.255, N*6, 0.019, "RB"]].forEach(([rb2,cnt,sc,tag])=>{
+      g+=ring(rb2+sz*0.019,0.55,0.26)+ring(rb2-sz*0.019,0.55,0.26);
+      for(let k=0;k<cnt;k++){
+        const a=base+2*Math.PI*k/cnt,[x,y]=P(rb2,a);
+        g+=`<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(a*180/Math.PI+90)})">`
+          +codeGlyph(`${tag}|${k}|N${S.nodes}`,sz*sc,0,0,sw(1.35),col)+`</g>`;
+      }
+    });
+    // крупные рамки теперь не голые линии: двойной контур, перемычки, медальоны и знаки.
+    g+=ornateNgon(R_node*1.02,4,0,"SQUARE-B",0.32,true)
+     +ornateNgon(R_node*0.90,3,Math.PI/3,"TRIANGLE-B",0.30,true)
+     +ngon(R_bi*0.845,N,0.85,0.22,half);
+  }
+
+  /* --- ступень 8: лозы, лучевые гребёнки, разбросанные медальоны --- */
+  if(LUSH>=8){
+    // лоза с листьями наружу от каждого узла
+    const vine=(r,a,side,scale,op)=>{
+      const s2=sz*scale;
+      const p0=P(r,a), p1=P(r+s2*0.9,a+side*0.045),
+            p2=P(r+s2*1.5,a+side*0.135), p3=P(r+s2*1.1,a+side*0.235);
+      let o=pth(`M ${f1(p0[0])},${f1(p0[1])} C ${f1(p1[0])},${f1(p1[1])} ${f1(p2[0])},${f1(p2[1])} ${f1(p3[0])},${f1(p3[1])}`,0.72,op);
+      for(let k=1;k<=3;k++){
+        const rr=r+s2*(0.45*k), aa=a+side*(0.035*k+0.02);
+        o+=petal(rr,rr+s2*0.34,aa+side*0.10,0.055,0.55,op*0.85);
+      }
+      return o;
+    };
+    ang.forEach(a=>{ g+=vine(R_out*0.995,a-half*0.30,-1,0.030,0.34)
+                     +vine(R_out*0.995,a+half*0.30, 1,0.030,0.34); });
+    // лучевые гребёнки между кольцами
+    const combs=[[R_out2*0.965,R_bo*1.012],[R_bi*0.955,R_bi*0.905]];
+    combs.forEach(([r0,r1])=>{ const n=N*16;
+      for(let k=0;k<n;k++){ const a=base+2*Math.PI*k/n;
+        g+=seg(P(r0,a),P(r1,a),0.42,k%2?0.16:0.28); } });
+    // медальоны, разбросанные по внешним кольцам
+    for(let k=0;k<N*2;k++){
+      const a=base+Math.PI/(N*2)+2*Math.PI*k/(N*2), rr=sz*0.0115, [x,y]=P(R_bo*0.955,a);
+      g+=`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(rr)}" fill="none" stroke="${col}" stroke-width="${sw(0.7)}" opacity="${odec(0.42)}"/>`
+       +`<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(a*180/Math.PI+90)})">`
+       +codeGlyph(`MED|${k}|N${S.nodes}`,rr*1.45,0,0,sw(1.2),col)+`</g>`;
+    }
+    // звёздная вспышка из ядра
+    for(let k=0;k<N*4;k++){
+      const a=base+2*Math.PI*k/(N*4), lg=(k%4===0);
+      g+=seg(P(R_core*1.02,a),P(R_core*(lg?2.30:1.72),a),lg?0.7:0.45,lg?0.36:0.20);
+    }
+  }
+
+  /* --- ступень 7: венец из мелких дуг по самому краю --- */
+  if(LUSH>=6){
+    g+=scallop(R_out*1.048,N*8,sz*0.010,0.62,0.30)
+     +scallop(R_out*1.048,N*8,-sz*0.006,0.50,0.20,Math.PI/(N*8));
+    ang.forEach(a=>{ for(let j=0;j<3;j++)
+      g+=spark(R_out*1.075,a+(j-1)*0.10,0.55,0.40); });
+  }
+
+
+  /* ============ РАСТИТЕЛЬНОЕ УБРАНСТВО ============ */
+  if(FLORA>=1){                       // бутоны по промежуткам кольца узлов
+    for(let i=0;i<N;i++){
+      const am=ang[i]+half;
+      g+=bud(R_node*1.055,am,sz*0.030,0.62,0.40);
+      g+=bud(R_node*0.905,am+Math.PI,sz*0.022,0.50,0.28);
+    }
+  }
+  if(FLORA>=2){                       // встречные волюты у каждого узла
+    ang.forEach(a=>{
+      g+=volute(R_node+sz*0.052*S.nodeR*1.15,a-half*0.34,sz*0.040, 0.60,0.36, 1)
+       +volute(R_node+sz*0.052*S.nodeR*1.15,a+half*0.34,sz*0.040, 0.60,0.36,-1);
+    });
+  }
+  if(FLORA>=3){                       // аканфы наружу от внешнего кольца
+    ang.forEach(a=>{
+      g+=acanthus(R_out*0.955,a-half*0.26,sz*0.055,0.62,0.38,3,false)
+       +acanthus(R_out*0.955,a+half*0.26,sz*0.055,0.62,0.38,3,true);
+    });
+  }
+  if(FLORA>=4){                       // пальметты в промежутках внешнего кольца
+    for(let i=0;i<N;i++){
+      const am=ang[i]+half;
+      g+=palmette(R_out*0.930,am,sz*0.046,0.58,0.36,5);
+      g+=volute(R_out*0.930,am-0.055,sz*0.026,0.48,0.26, 1)
+       +volute(R_out*0.930,am+0.055,sz*0.026,0.48,0.26,-1);
+    }
+  }
+  if(FLORA>=5){                       // ковёр из бутонов и дротиков по среднему полю
+    const Rm=(R_core*1.86+R_node*0.86)/2;
+    for(let k=0;k<N*3;k++){
+      const a=base+Math.PI/(N*3)+2*Math.PI*k/(N*3);
+      g+=bud(Rm*0.86,a,sz*0.019,0.44,0.26)
+       +dart(Rm*1.06,a,sz*0.026,0.42,0.24);
+    }
+    for(let i=0;i<N;i++){
+      const am=ang[i]+half;
+      g+=acanthus(R_bi*0.905,am,sz*0.034,0.48,0.28,2,false)
+       +acanthus(R_bi*0.905,am,sz*0.034,0.48,0.28,2,true);
+    }
+  }
+  if(FLORA>=6){                       // сплошная кайма из аканфов по внешнему венцу
+    const n=N*3;
+    for(let k=0;k<n;k++){
+      const a=base+Math.PI/n+2*Math.PI*k/n;
+      g+=acanthus(R_out*1.012,a,sz*0.030,0.46,0.28,2,k%2===0);
+    }
+    ang.forEach(a=>{ g+=palmette(R_core*2.10,a,sz*0.030,0.46,0.28,7); });
+  }
+
+  /* ============ СЕРЕДИНА ============
+     Поле между ядром и узлами. Пустое у древних кругов,
+     забитое кружевом у современных. Ползунок «Середина» (S.mid). */
+  {
+  const MID=(S.mid===undefined?3:S.mid);
+  const Rm0=R_core*1.86, Rm1=R_node*0.86, Rmid=(Rm0+Rm1)/2, band=Rm1-Rm0;
+
+  // гильоше: n перекрывающихся окружностей с центрами на кольце
+  const guilloche=(rc,ra,n,w,op,ph)=>{
+    let o="";
+    for(let i=0;i<n;i++){
+      const a=base+(ph||0)+2*Math.PI*i/n,[x,y]=P(rc,a);
+      o+=`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(ra)}" fill="none" stroke="${col}" stroke-width="${dsw(w)}" opacity="${odec(op)}"/>`;
+    }
+    return o;
+  };
+
+  // розовая кривая r = R0 + A·cos(kθ) — банкнотное кружево
+  const rose=(R0,A,k,w,op,ph,steps)=>{
+    steps=steps||240; let d="";
+    for(let i=0;i<=steps;i++){
+      const th=2*Math.PI*i/steps, r=R0+A*Math.cos(k*th+(ph||0)), [x,y]=P(r,base+th);
+      d+=(i?"L ":"M ")+f1(x)+","+f1(y)+" ";
+    }
+    return pth(d+"Z",w,op);
+  };
+
+  if(MID>=1){
+    g+=ring(Rm0,0.7,0.30)+ring(Rm1,0.7,0.30)
+     +ring(Rm0+band*0.34,0.5,0.18,"3 6")+ring(Rm0+band*0.68,0.5,0.18,"3 6");
+    const n=N*8;
+    for(let k=0;k<n;k++){
+      const a=base+2*Math.PI*k/n;
+      g+=seg(P(Rm0,a),P(Rm0+band*0.09*(k%2?1:1.8),a),0.5,k%2?0.20:0.34);
+      g+=seg(P(Rm1,a),P(Rm1-band*0.09*(k%2?1:1.8),a),0.5,k%2?0.20:0.34);
+    }
+  }
+
+  if(MID>=2){
+    g+=guilloche(Rmid,band*0.46,N*4,0.60,0.26)
+     +guilloche(Rmid,band*0.30,N*6,0.50,0.20,Math.PI/(N*6));
+  }
+
+  if(MID>=3){
+    g+=rose(Rmid,band*0.30,N*3,0.70,0.34)
+     +rose(Rmid,band*0.22,N*5,0.55,0.24,Math.PI/(N*5))
+     +rose(Rmid*0.94,band*0.14,N*2,0.60,0.22,Math.PI/2);
+  }
+
+  if(MID>=4){
+    // плетёнка: два фестона в противофазе читаются как переплетение
+    g+=scallop(Rmid,N*6,band*0.26,0.62,0.30)
+     +scallop(Rmid,N*6,-band*0.26,0.62,0.30,Math.PI/(N*6));
+    // спицы с бусинами
+    for(let i=0;i<N*2;i++){
+      const a=base+Math.PI/(N*2)+2*Math.PI*i/(N*2);
+      g+=seg(P(Rm0+band*0.06,a),P(Rm1-band*0.06,a),0.55,0.24);
+      for(let j=1;j<=3;j++) g+=diamond(Rm0+band*j*0.25,a,sz*0.0026,sz*0.0046,0.6,0.34);
+    }
+  }
+
+  if(MID>=6){
+    g+=rose(Rmid,band*0.34,N*9,0.42,0.20,Math.PI/(N*9))
+     +rose(Rmid*1.06,band*0.18,N*4,0.50,0.22)
+     +guilloche(Rmid*0.90,band*0.36,N*5,0.45,0.18,Math.PI/(N*5));
+  }
+  if(MID>=7){
+    const n=N*24;
+    for(let k=0;k<n;k++){
+      const a=base+2*Math.PI*k/n;
+      g+=seg(P(Rm0+band*0.16,a),P(Rm0+band*0.16+band*(k%3?0.10:0.20),a),0.38,k%3?0.14:0.24);
+      g+=seg(P(Rm1-band*0.16,a),P(Rm1-band*0.16-band*(k%3?0.10:0.20),a),0.38,k%3?0.14:0.24);
+    }
+    g+=ring(Rmid,0.5,0.20,"2 4");
+  }
+  if(MID>=5){
+    // второй ярус лепестков и медальоны на промежуточном кольце
+    const pc=N*3;
+    for(let i=0;i<pc;i++) g+=petal(Rm0+band*0.10,Rm0+band*0.62,base+2*Math.PI*i/pc,0.055,0.62,0.26);
+    for(let i=0;i<pc;i++) g+=petal(Rm1-band*0.10,Rm1-band*0.58,base+Math.PI/pc+2*Math.PI*i/pc,0.05,0.55,0.22);
+    for(let i=0;i<N;i++){
+      const a=base+Math.PI/N+2*Math.PI*i/N,[x,y]=P(Rmid,a),rr=band*0.115;
+      g+=`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(rr)}" fill="none" stroke="${col}" stroke-width="${sw(0.75)}" opacity="${odec(0.40)}"/>`
+       +`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(rr*0.60)}" fill="none" stroke="${col}" stroke-width="${sw(0.55)}" opacity="${odec(0.28)}"/>`;
+    }
+    g+=rose(Rmid,band*0.38,N*7,0.45,0.18,Math.PI/(N*7));
+  }
+  }
+
+  /* ============ УБРАНСТВО УЗЛОВ ============
+     Ободья вокруг узлов и гирлянды в промежутках между ними.
+     Ползунок «Узлы» (S.nodeOrn). Ничего не значит. */
+  {
+  const NO=(S.nodeOrn===undefined?3:S.nodeOrn);
+  const nr=sz*0.052*S.nodeR;
+  const ringAt=(x,y,r,w,op,dash)=>`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="none" `
+    +`stroke="${col}" stroke-width="${dsw(w)}" opacity="${odec(op)}"${dash?` stroke-dasharray="${dash}"`:""}/>`;
+
+  // фестон вокруг произвольной точки
+  const localScallop=(x,y,r,n,bulge,w,op,ph)=>{
+    ph=ph||0; let d="";
+    for(let i=0;i<n;i++){
+      const a0=ph+2*Math.PI*i/n,a1=ph+2*Math.PI*(i+1)/n,am=(a0+a1)/2;
+      const p0=[x+r*Math.cos(a0),y+r*Math.sin(a0)];
+      const pm=[x+(r+bulge)*Math.cos(am),y+(r+bulge)*Math.sin(am)];
+      const p1=[x+r*Math.cos(a1),y+r*Math.sin(a1)];
+      d+=(i?"":`M ${f1(p0[0])},${f1(p0[1])} `)+`Q ${f1(pm[0])},${f1(pm[1])} ${f1(p1[0])},${f1(p1[1])} `;
+    }
+    return pth(d,w,op);
+  };
+  // лепесток вокруг произвольной точки
+  const localPetal=(x,y,r0,r1,a,spread,w,op)=>{
+    const P2=(r,ang)=>[x+r*Math.cos(ang),y+r*Math.sin(ang)];
+    const p0=P2(r0,a),pT=P2(r1,a),pL=P2((r0+r1)*0.52,a-spread),pR=P2((r0+r1)*0.52,a+spread);
+    return pth(`M ${f1(p0[0])},${f1(p0[1])} C ${f1(pL[0])},${f1(pL[1])} ${f1(pL[0])},${f1(pL[1])} ${f1(pT[0])},${f1(pT[1])} `
+      +`C ${f1(pR[0])},${f1(pR[1])} ${f1(pR[0])},${f1(pR[1])} ${f1(p0[0])},${f1(p0[1])} Z`,w,op);
+  };
+
+  if(NO>=1) ang.forEach(a=>{
+    const [x,y]=P(R_node,a);
+    g+=ringAt(x,y,nr*1.22,0.75,0.42)+ringAt(x,y,nr*1.34,0.5,0.26,"3 5");
+    for(let k=0;k<24;k++){
+      const t2=a+2*Math.PI*k/24, lg=(k%6===0);
+      const r0=nr*1.40, r1=nr*(lg?1.60:1.50);
+      g+=pth(`M ${f1(x+r0*Math.cos(t2))},${f1(y+r0*Math.sin(t2))} `
+            +`L ${f1(x+r1*Math.cos(t2))},${f1(y+r1*Math.sin(t2))}`,lg?0.75:0.5,lg?0.44:0.26);
+    }
+  });
+
+  if(NO>=2) ang.forEach(a=>{
+    const [x,y]=P(R_node,a);
+    g+=localScallop(x,y,nr*1.66,12,nr*0.16,0.62,0.36,a);
+    for(let k=0;k<12;k++){
+      const t2=a+Math.PI/12+2*Math.PI*k/12;
+      g+=`<circle cx="${f1(x+nr*1.34*Math.cos(t2))}" cy="${f1(y+nr*1.34*Math.sin(t2))}" r="${f1(nr*0.045)}" fill="${col}" opacity="${odec(0.5)}"/>`;
+    }
+  });
+
+  if(NO>=3) ang.forEach(a=>{
+    const [x,y]=P(R_node,a);
+    for(let k=0;k<8;k++) g+=localPetal(x,y,nr*1.06,nr*1.86,a+2*Math.PI*k/8,0.17,0.6,0.28);
+    g+=ringAt(x,y,nr*0.62,0.5,0.24,"4 6");
+  });
+
+  if(NO>=4) ang.forEach(a=>{
+    const [x,y]=P(R_node,a);
+    for(let k=0;k<4;k++){                       // угловые скобы
+      const t2=a+Math.PI/4+k*Math.PI/2, w2=0.20;
+      const A2=[x+nr*1.94*Math.cos(t2-w2),y+nr*1.94*Math.sin(t2-w2)];
+      const M2=[x+nr*2.16*Math.cos(t2),      y+nr*2.16*Math.sin(t2)];
+      const B2=[x+nr*1.94*Math.cos(t2+w2),   y+nr*1.94*Math.sin(t2+w2)];
+      g+=pth(`M ${f1(A2[0])},${f1(A2[1])} Q ${f1(M2[0])},${f1(M2[1])} ${f1(B2[0])},${f1(B2[1])}`,0.72,0.40);
+    }
+    g+=curl(R_node+nr*1.30,a-0.055,1,0.55,0.7,0.34)
+     +curl(R_node+nr*1.30,a+0.055,-1,0.55,0.7,0.34);
+  });
+
+  if(NO>=5) ang.forEach(a=>{
+    const [x,y]=P(R_node,a);
+    g+=localScallop(x,y,nr*2.24,16,nr*0.11,0.5,0.26,a)
+     +localScallop(x,y,nr*2.24,16,-nr*0.07,0.42,0.18,a+Math.PI/16);
+    for(let k=0;k<4;k++) g+=spark(R_node,a,0.5,0.4);
+  });
+
+  /* ---- гирлянды в промежутках между узлами ---- */
+  if(NO>=1) for(let i=0;i<N;i++){
+    const am=ang[i]+half;
+    for(let j=-1;j<=1;j++) g+=diamond(R_node,am+j*0.055,sz*0.0026,sz*0.0048,0.6,0.34);
+  }
+  if(NO>=2) for(let i=0;i<N;i++){
+    const a0=ang[i]+half*0.42, a1=ang[(i+1)%N]-half*0.42, am=ang[i]+half;
+    const p0=P(R_node,a0),pm=P(R_node+sz*0.020,am),p1=P(R_node,a1);
+    g+=pth(`M ${f1(p0[0])},${f1(p0[1])} Q ${f1(pm[0])},${f1(pm[1])} ${f1(p1[0])},${f1(p1[1])}`,0.75,0.36);
+  }
+  if(NO>=3) for(let i=0;i<N;i++){
+    const a0=ang[i]+half*0.42, a1=ang[(i+1)%N]-half*0.42, am=ang[i]+half;
+    const q0=P(R_node,a0),qm=P(R_node-sz*0.020,am),q1=P(R_node,a1);
+    g+=pth(`M ${f1(q0[0])},${f1(q0[1])} Q ${f1(qm[0])},${f1(qm[1])} ${f1(q1[0])},${f1(q1[1])}`,0.62,0.26);
+  }
+  if(NO>=4) for(let i=0;i<N;i++){
+    const am=ang[i]+half, [x,y]=P(R_node,am), rr=sz*0.013;
+    g+=ringAt(x,y,rr,0.8,0.46)+ringAt(x,y,rr*0.56,0.55,0.30);
+    g+=`<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(am*180/Math.PI+90)})">`
+      +codeGlyph(`GAP|${i}|N${S.nodes}`,rr*1.5,0,0,sw(1.5),col)+`</g>`;
+  }
+  if(NO>=5) for(let i=0;i<N;i++){
+    const am=ang[i]+half;
+    g+=curl(R_node+sz*0.030,am-0.05,1,0.7,0.6,0.30)
+     +curl(R_node+sz*0.030,am+0.05,-1,0.7,0.6,0.30);
+    for(let k=0;k<5;k++) g+=diamond(R_node-sz*0.030,am+(k-2)*0.030,sz*0.0020,sz*0.0034,0.5,0.26);
+  }
+  }
+  }
+  L.ornament=g;
+
+  // Пояс — не словарь существительных, а служебные кодовые слова протокола.
+  g=""; const rb=(R_bo+R_bi)/2;
+  for(let k=0;k<S.band;k++){
+    const a=2*Math.PI*k/S.band,[x,y]=P(rb,a),idx=k+S.bandStart;
+    g+=`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${(a*180/Math.PI+90).toFixed(1)})">`
+      +codeGlyph(`FRAME|${idx%24}|N${S.nodes}`,sz*0.030,0,0,sw(1.65),col)+`</g>`;}
+  L.band=g;
+
+  g=""; const pts=ang.map(a=>P(R_node,a));
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++)
+    g+=`<line x1="${pts[i][0].toFixed(1)}" y1="${pts[i][1].toFixed(1)}" x2="${pts[j][0].toFixed(1)}" y2="${pts[j][1].toFixed(1)}" stroke="${col}" stroke-width="${sw(2.2)}"/>`;
+  g+=`<circle cx="${C}" cy="${C}" r="${R_node.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(2)}" opacity="0.6"/>`;
+  L.web=g;
+
+  g=""; const nr=sz*0.057*S.nodeR;
+  const miniGlyph=(key,scale,x,y,rot,material,op)=>`<g opacity="${odec(op)}" transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${rot.toFixed(1)})">`
+    +codeGlyph(key,scale,0,0,sw(1.05),col,{material})+`</g>`;
+  const nodeBrace=(x,y,r,a0,a1,bump,w,op)=>{
+    const am=(a0+a1)/2;
+    const p0=[x+r*Math.cos(a0),y+r*Math.sin(a0)], pm=[x+(r+bump)*Math.cos(am),y+(r+bump)*Math.sin(am)], p1=[x+r*Math.cos(a1),y+r*Math.sin(a1)];
+    return `<path d="M ${p0[0].toFixed(1)},${p0[1].toFixed(1)} Q ${pm[0].toFixed(1)},${pm[1].toFixed(1)} ${p1[0].toFixed(1)},${p1[1].toFixed(1)}" fill="none" stroke="${col}" stroke-width="${dsw(w)}" opacity="${odec(op)}"/>`;
+  };
+  ang.forEach((a,k)=>{
+    const [x,y]=P(R_node,a),spec=S.slots[k],rs=resolveSpec(spec),mat=rs.material;
+    const baseKey=`NODE|${mat}|${spec.action}|${spec.phase}|${spec.form}|${k}`;
+    g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(nr*1.18).toFixed(1)}" fill="${S.alpha?'none':'#05080d'}" stroke="${col}" stroke-width="${sw(1.35)}" opacity="${odec(0.95)}"/>`
+      +`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${nr.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(3.15)}" opacity="${odec(1)}"/>`
+      +`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(nr*0.84).toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(1.25)}" opacity="${odec(0.70)}"/>`
+      +`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(nr*0.64).toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(0.85)}" opacity="${odec(0.34)}" stroke-dasharray="4 6"/>`;
+
+    for(let i=0;i<18;i++){
+      const t=a+Math.PI/18+i*2*Math.PI/18, major=(i%6===0), minor=(i%3===0);
+      const r0=nr*1.02, r1=nr*(major?1.15:(minor?1.11:1.08));
+      const x0=x+r0*Math.cos(t), y0=y+r0*Math.sin(t), x1=x+r1*Math.cos(t), y1=y+r1*Math.sin(t);
+      g+=`<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="${col}" stroke-width="${sw(major?0.95:(minor?0.7:0.5))}" opacity="${odec(major?0.52:(minor?0.34:0.22))}"/>`;
+    }
+
+    g+=nodeBrace(x,y,nr*1.08,a-Math.PI*0.82,a-Math.PI*0.18,nr*0.16,0.62,0.34)
+      +nodeBrace(x,y,nr*1.08,a+Math.PI*0.18,a+Math.PI*0.82,nr*0.16,0.62,0.34)
+      +nodeBrace(x,y,nr*0.73,a-Math.PI*0.68,a-Math.PI*0.32,nr*0.10,0.46,0.24)
+      +nodeBrace(x,y,nr*0.73,a+Math.PI*0.32,a+Math.PI*0.68,nr*0.10,0.46,0.24);
+
+    const auxOff=[0,Math.PI/2,Math.PI,-Math.PI/2], mr=nr*0.175;
+    auxOff.forEach((off,j)=>{
+      const ta=a+off, mx=x+nr*1.48*Math.cos(ta), my=y+nr*1.48*Math.sin(ta);
+      g+=`<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="${(mr*1.20).toFixed(1)}" fill="${S.alpha?'none':'#05080d'}" stroke="${col}" stroke-width="${sw(0.88)}" opacity="${odec(0.78)}"/>`
+        +`<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="${(mr*0.82).toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(0.55)}" opacity="${odec(0.42)}"/>`
+        +miniGlyph(`NODEAUX|${baseKey}|${j}`,mr*0.98,mx,my,ta*180/Math.PI+90,mat,0.72);
+    });
+
+    for(let j=0;j<3;j++){
+      const ta=a+(-1+j)*0.58, gx=x+nr*0.88*Math.cos(ta), gy=y+nr*0.88*Math.sin(ta);
+      g+=miniGlyph(`NODEBELT|${mat}|${spec.action}|${spec.phase}|${j}`,nr*0.30,gx,gy,ta*180/Math.PI+90,mat,0.48);
+    }
+
+    g+=sigilGlyph(spec,nr*1.10,x,y,sw(2.45),col);
+  });
+  L.nodes=g;
+
+  g=`<circle cx="${C}" cy="${C}" r="${R_core.toFixed(1)}" fill="${S.alpha?'none':'#05080d'}" stroke="${col}" stroke-width="${sw(4)}"/>`
+   +`<circle cx="${C}" cy="${C}" r="${(R_core*0.78).toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw(1.8)}" opacity="0.7"/>`
+   +codeGlyph("CORE|"+S.core,R_core*1.35,C,C,sw(2.8),col);
+  L.core=g;
+  return L;
+}
+function svg(only){
+  const L=layers(),sz=S.size;
+  const pad=sz*0.035;
+  let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${sz}" height="${sz}" viewBox="${(-pad).toFixed(1)} ${(-pad).toFixed(1)} ${(sz+pad*2).toFixed(1)} ${(sz+pad*2).toFixed(1)}">`;
+  if(!S.alpha) s+=`<rect x="${(-pad).toFixed(1)}" y="${(-pad).toFixed(1)}" width="${(sz+pad*2).toFixed(1)}" height="${(sz+pad*2).toFixed(1)}" fill="#05080d"/>`;
+  let inner="";
+  for(const k in L){if(only&&k!==only)continue;if(!only&&!S.L[k].on)continue;
+    inner+=`<g id="${k}" opacity="${(S.L[k].op/100).toFixed(2)}">${L[k]}</g>`;}
+  if(S.glow){
+    s+=`<defs><filter id="glow" x="-30%" y="-30%" width="160%" height="160%">`
+      +`<feGaussianBlur stdDeviation="${(sz*0.0020).toFixed(2)}" result="b1"/>`
+      +`<feGaussianBlur stdDeviation="${(sz*0.0090).toFixed(2)}" result="b2"/>`
+      +`<feMerge><feMergeNode in="b2"/><feMergeNode in="b2"/><feMergeNode in="b1"/>`
+      +`<feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`
+      +`<g filter="url(#glow)">${inner}</g>`;
+  } else s+=inner;
+  return s+`</svg>`;
+}
+
+/* ===================== интерфейс ===================== */
+const $=id=>document.getElementById(id);
+function render(){$("out").innerHTML=svg();$("stage").classList.toggle("alpha",S.alpha);
+  const ep=$("energy"); if(ep) ep.innerHTML=energyPanel();
+  const bp=$("bank"); if(bp){ bp.innerHTML=bankPanel(); wireBank(); }
+  const vp=$("vein"); if(vp) vp.innerHTML=veinPanel();}
+/* ---------- у каждой стихии — только свои параметры ----------
+   Огонь: объём пламени и температура; масса и плотность выводятся
+   (горячий газ, ρ ≈ 353 / T). Эфир: только операция — масса и плотность
+   берутся у объекта, который он держит. Вода и воздух: плотность по фазе
+   и температуре. Земля: плотность вводится — породы разные.
+   Значения пересчитываются только при правке узла, поэтому знаки
+   старых сборок не меняются. */
+const SOLID_ACTS=["hold","move","create","compress","split"];
+const SCHEMA={
+  earth:{f:["mass","density","volume","temp","phase","form","action"],ph:["native","solid","liquid"],act:SOLID_ACTS},
+  water:{f:["mass","volume","temp","phase","form","action"],ph:["native","solid","liquid","gas"],act:SOLID_ACTS},
+  air:  {f:["mass","volume","temp","phase","form","action"],ph:["native","gas","liquid"],act:SOLID_ACTS},
+  fire: {f:["flame","temp","form","action"],ph:[],act:["create","hold","move"]},
+  ether:{f:["action"],ph:[],act:["bind","hold"]}
+};
+const r3=v=>+Number(v).toPrecision(3);
+const gasRho=(k,T)=>k/(Number(T)+273.15);              // идеальный газ при 1 атм
+function autoDensity(mat,phase,T){
+  const th=THERMO[mat]; if(!th) return null;
+  const p=(phase==="native"||PHASE_STEP[phase]===undefined)?physPhase(th,Number(T)):PHASE_STEP[phase];
+  if(mat==="water") return p===0?917:p===1?1000:r3(gasRho(219,T));
+  if(mat==="air")   return p===0?1000:p===1?870:r3(gasRho(353,T));
+  return null;
+}
+function normSpec(sp){
+  const sc=SCHEMA[sp.material]; if(!sc) return;
+  if(!sc.act.includes(sp.action)) sp.action=sc.act[0];
+  if(sc.ph.length&&!sc.ph.includes(sp.phase)) sp.phase="native";
+  if(sp.material==="fire"){
+    sp.phase="native";
+    let L=Number(sp.volume);
+    if(!(L>0)){ const r=resolveSpec(sp); L=r.volume>0&&r.volume<1e5?r.volume:10; }
+    sp.volume=r3(L);
+    sp.density=r3(gasRho(353,sp.temp));
+    sp.mass=+(sp.volume*sp.density/1000).toPrecision(4);
+  } else if(sp.material==="water"||sp.material==="air"){
+    sp.density=autoDensity(sp.material,sp.phase,sp.temp);
+  } else if(sp.material==="earth"){
+    if(!(Number(sp.density)>=500)) sp.density=1500;
+  }
+}
+// смена вещества: чужие значения не переезжают в новый узел
+function switchMaterial(sp,prev){
+  if(sp.material===prev) return;
+  const fromFire=prev==="fire";
+  if(sp.material==="fire"){
+    sp.volume=10;
+    if(!(Number(sp.temp)>=300)) sp.temp=800;
+  } else if(sp.material!=="ether"){
+    sp.volume="auto";
+    if(fromFire||prev==="ether"){ sp.temp=20; if(!(Number(sp.mass)>=0.01)) sp.mass=1; }
+    if(sp.material==="earth") sp.density=1500;
+    sp.phase="native";
+  }
+}
+const lbl=(arr,v)=>(arr.find(x=>x[0]===v)||[,v])[1];
+function specSummary(s){
+  const mat=MATERIALS[s.material]?.n||s.material,r=resolveSpec(s);
+  const mv=s.action==="move"&&s.speed>0?` · ${s.speed} м/с`:"";
+  if(s.material==="fire")  return `${mat} · ${+r.volume.toFixed(2)} л · ${r.temp}°`+mv;
+  if(s.material==="ether") return `${mat} · ${lbl(ACTIONS,s.action)}`;
+  return `${mat} · ${massLabel(s.mass)} · ρ ${s.density} · ${(+r.volume.toFixed(3))} л`+mv;
+}
+function specLines(sp){
+  const r=resolveSpec(sp),out=[`вещество: ${MATERIALS[sp.material]?.n||sp.material}`];
+  const f=(SCHEMA[sp.material]||SCHEMA.earth).f;
+  if(f.includes("flame")) out.push(`пламя: ${r.volume} л (${massLabel(r.mass)})`);
+  if(f.includes("mass"))    out.push(`масса: ${massLabel(sp.mass)}`);
+  if(f.includes("mass"))    out.push(`плотность: ${sp.density} кг/м³`);
+  if(f.includes("volume"))  out.push(`объём: ${r.volume.toFixed(4)} л`);
+  if(f.includes("temp"))    out.push(`температура: ${sp.temp} °C`);
+  if(f.includes("phase"))   out.push(`фаза: ${lbl(PHASES,sp.phase)}`);
+  if(f.includes("form"))    out.push(`форма: ${lbl(FORMS,sp.form)}`);
+  out.push(`операция: ${lbl(ACTIONS,sp.action)}`+(sp.action==="move"&&sp.speed>0?`, ${sp.speed} м/с`:""));
+  return out;
+}
+function consistency(s){
+  if(s.material==="fire")  return {ok:true,t:`пламя: ${massLabel(+resolveSpec(s).mass.toPrecision(3))} горячего газа, ρ ${s.density} кг/м³`};
+  if(s.material==="ether") return {ok:true,t:"эфир держит объект круга: масса и плотность — его"};
+  const pre=(s.material==="water"||s.material==="air")?`плотность по фазе: ${s.density} кг/м³ · `:"";
+  if(s.volume==="auto")return {ok:true,t:pre+`объём вычислен: ${resolveSpec(s).volume.toFixed(4)} л`};
+  const expected=Number(s.mass)/Number(s.density)*1000,actual=Number(s.volume);
+  if(!isFinite(expected)||expected<=0)return {ok:true,t:pre+"сигнатура принята без проверки состояния"};
+  const err=Math.abs(actual-expected)/expected;
+  return err<0.05?{ok:true,t:pre+`согласовано с m / ρ: расчёт ${expected.toFixed(4)} л`}:{ok:false,t:pre+`конфликт: m / ρ даёт ${expected.toFixed(4)} л, задано ${actual} л`};
+}
+function drawCore(){
+  $("coreSelect").innerHTML=optionList(CORES,S.core);
+  $("coreSelect").onchange=e=>{S.core=e.target.value;render()};
+}
+function slotFields(s){
+  const sc=SCHEMA[s.material]||SCHEMA.earth;
+  const inp=(k,label,val)=>`<div class="field"><label>${label}</label><input type="text" inputmode="decimal" data-k="${k}" value="${val}"></div>`;
+  const sel=(k,label,opts)=>`<div class="field"><label>${label}</label><select data-k="${k}">${opts}</select></div>`;
+  const F={
+    mass:   ()=>inp("mass","масса, кг",s.mass),
+    density:()=>inp("density","плотность, кг/м³",s.density),
+    volume: ()=>`<div class="field"><label>объём, л <i>auto</i></label><input type="text" data-k="volume" value="${s.volume}"></div>`,
+    flame:  ()=>inp("volume","объём пламени, л",s.volume),
+    temp:   ()=>inp("temp","температура, °C",s.temp),
+    phase:  ()=>sel("phase","фаза",optionList(PHASES.filter(p=>sc.ph.includes(p[0])),s.phase)),
+    form:   ()=>sel("form","форма",optionList(FORMS,s.form)),
+    action: ()=>sel("action","операция",optionList(ACTIONS.filter(a=>sc.act.includes(a[0])),s.action)),
+  };
+  let h=sel("material","вещество",materialOptions(s.material))+sc.f.map(k=>F[k]()).join("");
+  if(s.action==="move") h+=inp("speed","скорость, м/с",s.speed||0);
+  return h;
+}
+let slotOpen=new Set([0]);
+function drawSlots(){
+  let h="";
+  for(let i=0;i<S.nodes;i++){
+    const s=S.slots[i],check=consistency(s);
+    h+=`<details class="slotcard" ${slotOpen.has(i)?"open":""} data-i="${i}">
+      <summary><span class="slot-title">узел ${i+1}</span><span class="slot-summary">${specSummary(s)}</span><span class="finger">${fingerprint(s)}</span></summary>
+      <div class="slotbody"><div class="slotgrid">
+        ${slotFields(s)}
+      </div><div class="slotstatus ${check.ok?'ok':'warn'}">${check.t}</div></div>
+    </details>`;
+  }
+  $("slots").innerHTML=h;
+  $("slots").querySelectorAll("details.slotcard").forEach(card=>{
+    const i=+card.dataset.i;
+    card.addEventListener("toggle",()=>{ card.open?slotOpen.add(i):slotOpen.delete(i); });
+    const apply=(k,raw)=>{
+      let v=raw;
+      if(k==="volume"){ v=(String(raw).trim().toLowerCase()==="auto"&&S.slots[i].material!=="fire")?"auto":num(raw,S.slots[i].material==="fire"?S.slots[i].volume:"auto"); }
+      else if(k==="mass"||k==="density"||k==="temp"||k==="speed"){ v=num(raw,S.slots[i][k]||0); }
+      const prev=S.slots[i].material;
+      S.slots[i][k]=v;
+      if(k==="material") switchMaterial(S.slots[i],prev);
+      normSpec(S.slots[i]);
+      drawSlots();
+      render();
+    };
+    card.querySelectorAll("select").forEach(sel=>sel.onchange=()=>apply(sel.dataset.k,sel.value));
+    card.querySelectorAll("input[data-k]").forEach(inp=>{
+      inp.onchange=()=>apply(inp.dataset.k,inp.value);
+      inp.onkeydown=e=>{ if(e.key==="Enter"){e.preventDefault();inp.blur();} };
+    });
+  });
+}
+function drawNodes(){
+  const list=S.unlocked?[3,4,5,6,7,8]:OPEN;
+  $("nodebtns").innerHTML=list.map(n=>`<button class="nb ${SHUT.includes(n)?'locked':''} ${S.nodes===n?'on':''}" data-n="${n}">${n}</button>`).join("");
+  $("nodebtns").querySelectorAll(".nb").forEach(b=>b.onclick=()=>{
+    S.nodes=+b.dataset.n;
+    while(S.slots.length<S.nodes)S.slots.push(baseSpec(S.slots.length));
+    drawNodes();drawSlots();render();
+    const shut=SHUT.includes(S.nodes);
+    $("nodenote").textContent=shut?`${S.nodes} узла — не открыты Академией. Только для глав, где их выводит Эмерин.`:"Рабочих конфигураций три.";
+    $("nodenote").className="note"+(shut?" warn":"");
+  });
+}
+drawCore();drawNodes();drawSlots();
+$("unl").onchange=e=>{S.unlocked=e.target.checked;
+  if(!S.unlocked&&SHUT.includes(S.nodes)){S.nodes=7;$("nodenote").textContent="Рабочих конфигураций три.";$("nodenote").className="note";drawSlots()}
+  drawNodes();render();};
+
+function drawLayers(){
+$("layers").innerHTML=Object.keys(LNAMES).map(k=>`
+  <div class="layer" data-k="${k}"><input type="checkbox" ${S.L[k].on?"checked":""}>
+  <label>${LNAMES[k]}</label><span class="val">${S.L[k].op}</span>
+  <input type="range" min="0" max="100" value="${S.L[k].op}" style="grid-column:1/-1"></div>`).join("");
+$("layers").querySelectorAll(".layer").forEach(row=>{
+  const k=row.dataset.k,cb=row.querySelector("input[type=checkbox]"),rg=row.querySelector("input[type=range]"),vl=row.querySelector(".val");
+  const sync=()=>row.classList.toggle("off",!S.L[k].on);
+  cb.onchange=()=>{S.L[k].on=cb.checked;sync();render()};
+  rg.oninput=()=>{S.L[k].op=+rg.value;vl.textContent=rg.value;render()};sync();
+});
+}
+drawLayers();
+
+const SL=[["stroke","Толщина линии",0.2,3,0.05],["nodeR","Размер узлов",0.5,1.8,0.02],
+ ["coreR","Размер ядра",0.4,2,0.02],["webR","Вынос узлов",0.6,1.25,0.01],
+ ["band","Символов в поясе",12,96,1],["ticks","Засечек шкалы",0,144,6],
+ ["rot","Поворот, °",0,360,1],["bandStart","Сдвиг протокола",0,30,1],
+ ["extraRings","Декоративные кольца",0,10,1],
+ ["filigree","Филигрань",0,10,1],
+ ["halo","Внешний венец",0,10,1],
+ ["microGlyphs","Микросигилы",0,10,1],
+ ["decorOpacity","Плотность / непрозрачность декора",0,10,1],
+ ["lush","Пышность",0,8,1],
+ ["mid","Середина",0,7,1],
+ ["nodeOrn","Узлы и промежутки",0,6,1],
+ ["flora","Растительность",0,6,1]];
+function drawSliders(){
+$("sliders").innerHTML=SL.map(([k,n,a,b,st])=>`
+  <div class="row" data-k="${k}"><span>${n}</span><span class="val">${S[k]}</span>
+  <input type="range" min="${a}" max="${b}" step="${st}" value="${S[k]}"></div>`).join("");
+$("sliders").querySelectorAll(".row").forEach(row=>{
+  const k=row.dataset.k,rg=row.querySelector("input"),vl=row.querySelector(".val");
+  rg.oninput=()=>{S[k]=+rg.value;vl.textContent=rg.value;render()};
+});
+}
+drawSliders();
+
+$("col").oninput=e=>{S.color=e.target.value;render()};
+function wireBank(){
+  document.querySelectorAll("[data-load]").forEach(b=>b.onclick=()=>{
+    const c=S.bank[+b.dataset.load];
+    S.nodes=c.nodes; S.slots=JSON.parse(JSON.stringify(c.slots));
+    S.core=c.core; S.repack=!!c.repack;
+    $("repk").checked=S.repack;
+    drawNodes();drawSlots();drawCore&&drawCore();render();});
+  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+    S.bank.splice(+b.dataset.del,1); render();});
+}
+$("caster").innerHTML=CASTERS.map(c=>`<option value="${c[0]}"${c[0]==="student"?" selected":""}>${c[1]}</option>`).join("");
+$("caster").onchange=e=>{S.caster=e.target.value;render()};
+$("cast").oninput=e=>{S.cast=+e.target.value;$("castv").textContent=e.target.value;render()};
+$("addc").onclick=()=>{ S.bank.push(snapshot()); render(); };
+$("repk").onchange=e=>{ S.repack=e.target.checked; render(); };
+$("tierSel").innerHTML=TIERS.map((v,i)=>`<option value="${i}">${i} · ${v[0]} ×${v[1]}</option>`).join("");
+$("tierSel").onchange=e=>{S.tier=+e.target.value;render()};
+$("ordck").onchange=e=>{S.orderOK=e.target.checked;render()};
+$("glowb").onclick=()=>{S.glow=!S.glow;$("glowb").textContent="Свечение: "+(S.glow?"вкл":"выкл");render()};
+$("bg").onclick=()=>{S.alpha=!S.alpha;$("bg").textContent=S.alpha?"Чёрный":"Прозрачный";render()};
+
+function save(name,text,type="image/svg+xml"){const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+$("maxOrn").onclick=()=>{
+  S.lush=8; S.mid=7; S.nodeOrn=6; S.flora=6; S.extraRings=10; S.filigree=10; S.halo=10; S.microGlyphs=10; S.decorOpacity=10; S.band=96; S.ticks=144;
+  S.L.ornament.on=true; S.L.ornament.op=100;
+  S.L.band.on=true; S.L.rings.on=true;
+  syncUI();
+};
+$("saveJ").onclick=()=>{
+  const d=JSON.parse(JSON.stringify(S));      // всё состояние целиком
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,1)],{type:"application/json"}));
+  a.download=`krug_${S.nodes}uzlov.json`; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+};
+function syncUI(){
+  drawNodes(); drawSlots(); drawCore&&drawCore(); drawLayers(); drawSliders();
+  if($("tierSel"))  $("tierSel").value=S.tier||0;
+  if($("repk"))     $("repk").checked=!!S.repack;
+  if($("ordck"))    $("ordck").checked=S.orderOK!==false;
+  if($("unl"))      $("unl").checked=!!S.unlocked;
+  if($("col"))      $("col").value=S.color||"#7fd4ff";
+  if($("caster"))   $("caster").value=S.caster||"student";
+  if($("cast")){    $("cast").value=S.cast||4; $("castv").textContent=S.cast||4; }
+  if($("bg"))       $("bg").textContent=S.alpha?"Чёрный":"Прозрачный";
+  if($("glowb"))    $("glowb").textContent="Свечение: "+(S.glow?"вкл":"выкл");
+  render();
+}
+$("loadJ").onclick=()=>$("fileJ").click();
+$("fileJ").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+    const d=JSON.parse(r.result);
+    Object.keys(d).forEach(k=>{ if(d[k]!==undefined) S[k]=d[k]; });
+    if(!S.L) S.L={};
+    slotOpen=new Set([0]);
+    syncUI();
+  }catch(err){ alert("Файл не читается: "+err.message); } };
+  r.readAsText(f); e.target.value="";
+};
+$("exAll").onclick=()=>save(`krug_${S.nodes}_signatures.svg`,svg());
+$("exLay").onclick=()=>{Object.keys(S.L).filter(k=>S.L[k].on).forEach((k,i)=>setTimeout(()=>save(`krug_${S.nodes}_${k}.svg`,svg(k)),i*350))};
+$("exPng").onclick=()=>{const img=new Image(),N=2048;
+  img.onload=()=>{const c=document.createElement("canvas");c.width=c.height=N;c.getContext("2d").drawImage(img,0,0,N,N);
+    c.toBlob(b=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`krug_${S.nodes}_signatures.png`;a.click()})};
+  img.src="data:image/svg+xml;base64,"+btoa(unescape(encodeURIComponent(svg())));
+};
+
+$("exDic").onclick=()=>{
+  const specs=S.slots.slice(0,S.nodes),cols=2,cw=760,ch=330,rows=Math.ceil(specs.length/cols),W=cols*cw,H=rows*ch+110;
+  let out=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
+    +`<rect width="${W}" height="${H}" fill="#05080d"/>`
+    +`<text x="42" y="58" fill="${S.color}" font-family="monospace" font-size="26" letter-spacing="4">КАРТА ТЕКУЩИХ СИГНАТУР</text>`
+    +`<text x="42" y="86" fill="#4f6879" font-family="monospace" font-size="13">редакторская расшифровка · в мире этих подписей нет</text>`;
+  specs.forEach((sp,i)=>{
+    const x=(i%cols)*cw+34,y=Math.floor(i/cols)*ch+120;
+    out+=`<rect x="${x}" y="${y}" width="${cw-68}" height="${ch-34}" fill="none" stroke="#1b2b38"/>`;
+    out+=sigilGlyph(sp,190,x+125,y+138,5,S.color);
+    const lines=[`УЗЕЛ ${i+1}  ${fingerprint(sp)}`,...specLines(sp)];
+    lines.forEach((t,j)=>out+=`<text x="${x+245}" y="${y+48+j*25}" fill="${j===0?'#d6e6f2':'#8fa6b8'}" font-family="monospace" font-size="${j===0?16:14}">${t}</text>`);
+  });
+  save("karta_signatur.svg",out+`</svg>`);
+};
+
+render();
+</script>
+</body>
+</html>
