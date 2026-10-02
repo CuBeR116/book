@@ -512,7 +512,7 @@ function sigilGlyph(spec,s,cx,cy,w,c){return codeGlyph("SIG|"+canonicalSpec(spec
      тепло        = Q, кДж / KJ_PER_UNIT; Q = m·c·ΔT + скрытые теплоты
                     (см. «ТЕПЛО ПО ФИЗИКЕ»), и нагрев, и охлаждение
      импульс      = ½·m·v² / КПД, кДж      по физике, КПД разгона ETA_KIN
-     стабилизация = 0.5 × (масса, г / 100) × (1000 / плотность)
+     стабилизация = 0.5 × (масса, г / 100) × (1000 / max(плотность, 50))
      итог         = сумма × 1.2^(слотов)          пустые тоже считаются
      серия        = итог × 2.5^(номер круга)       дорогое — первым
 
@@ -527,6 +527,10 @@ function sigilGlyph(spec,s,cx,cy,w,c){return codeGlyph("SIG|"+canonicalSpec(spec
    чем дальше от естественного состояния, тем дороже. Фаза платится теплом. */
 const FORM_MUL={native:1, sphere:1.2, sheet:1.3, stream:1.3, shell:1.5, spike:1.6};
 const T_AMBIENT=20;
+/* Эфир для газа: формула делит на плотность, и у газа уходит в бесконечность.
+   Газ эфир держит по объёму, а не по грамму: плотность берётся не ниже
+   50 кг/м³ (множитель 1000/ρ не больше ×20). Решение автора 2026-10-02. */
+const RHO_FLOOR=50;
 /* КПД разгона: какая доля Этера уходит в движение. ПРЕДЛОЖЕНО, НЕ КАНОН.
    При 10% камень 1 кг на 20 м/с — 2 кДж, выстрел 30 г на 300 м/с — 13.5 кДж. */
 const ETA_KIN=0.10;
@@ -646,8 +650,9 @@ function circleEnergy(cfg){
         note=r.speed>0?`${massLabel(+objKg.toPrecision(3))} · ${r.speed} м/с`:"скорость не задана";
       }
       else if(role==="stab"){
-        e=0.5*(objKg*1000/100)*(1000/objRho)*tierMul();
-        note=`${massLabel(+objKg.toPrecision(3))} · ρ ${+objRho.toPrecision(3)}`;
+        const rE=Math.max(objRho,RHO_FLOOR);
+        e=0.5*(objKg*1000/100)*(1000/rE)*tierMul();
+        note=`${massLabel(+objKg.toPrecision(3))} · ρ ${+objRho.toPrecision(3)}`+(objRho<RHO_FLOOR?" · газ: по объёму":"");
       }
       if(cfg.repack&&role!=="stab") e=0;
     }
