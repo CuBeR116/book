@@ -115,6 +115,14 @@ table.cost tr.waste td{color:var(--warn)}
 .rank.yes{border-color:var(--ok);color:var(--hi)} .rank.yes b{color:var(--ok)}
 .rank.body{border-color:var(--fire);color:var(--hi)} .rank.body b{color:var(--fire)}
 .rank.no{opacity:.55}
+.dmg{border:1px solid var(--rule-hi);padding:10px 12px;margin:0 0 12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:center}
+.dmg .num{font-family:var(--f-display);font-size:34px;line-height:1;color:var(--hi);grid-row:span 2}
+.dmg .num small{font-size:15px;color:var(--dim)}
+.dmg .word{font-family:var(--f-data);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.dmg .word.k0{color:var(--dim)} .dmg .word.k1{color:var(--ok)} .dmg .word.k2{color:var(--fire)} .dmg .word.k3{color:var(--warn)}
+.dmg ul{margin:0;padding:0;list-style:none;font-family:var(--f-data);font-size:11.5px;color:var(--text)}
+.dmg li{display:inline}
+.dmg li+li::before{content:" · ";color:var(--dim)}
 .atlas h2{font-family:var(--f-display);font-weight:400;font-size:26px;color:var(--hi);margin:0 0 4px}
 .atl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .atl span{font-size:14px;border:1px solid var(--rule-hi);padding:3px 9px;color:var(--hi)}
@@ -162,7 +170,7 @@ table.cost tr.waste td{color:var(--warn)}
     </section>
   </div>
 
-  <p class="foot">Прототип. Цена — по формулам конструктора кругов v24: стихии по канону (создать ×2, взять готовое ×1), тепло и разгон по физике, эфир держит форму (газ — по объёму), каждый узел круга умножает сумму на 1,2. Пустые и служебные узлы тоже оплачиваются. Узлы-пакеты в одном круге складываются в один объект: массы суммируются, тепло перетекает. Опыт: сотворить круг +1, новое явление +3.</p>
+  <p class="foot">Прототип. Цена — по формулам конструктора кругов v24: стихии по канону (создать ×2, взять готовое ×1), тепло и разгон по физике, эфир держит форму (газ — по объёму), каждый узел круга умножает сумму на 1,2. Пустые и служебные узлы тоже оплачиваются. Узлы-пакеты в одном круге складываются в один объект: массы суммируются, тепло перетекает. Урон — оценка по человеку без защиты, 100 = смерть: 0,1 за джоуль удара, 0,4 за килоджоуль тепла, горячее поджигает одежду. Опыт: сотворить круг +1, новое явление +3.</p>
 </div>
 
 <script>
@@ -264,6 +272,7 @@ function pkgSolve(nodes,size){
   R.sum=rows.reduce((s,r)=>s+r.e,0); R.total=R.sum*R.mult;
   const mats=[...new Set(subs.map(s=>s.m))];
   R.obj={mats,subs:mats.filter(m=>m!=="fire"),hasFire:mats.includes("fire"),T,form,v:speed,massTot,volTot,rhoObj,
+    parts:subs.filter(x=>x.m!=="fire").map(x=>({m:x.m,kg:x.kg})),flameL:subs.filter(x=>x.m==="fire").reduce((a,x)=>a+(x.L||10),0),
     ether:nodes.some(p=>p&&roleOf(p)==="stab")}; R.obj.pct=R.obj.ether?100:0; R.obj.hold=R.obj.ether?HOLD_BASE_S:0;
   if(!R.empty){
     if(form!=="native"&&!R.obj.ether) warn.push("Без эфира форма не держится: через миг всё распадётся в естественную форму.");
@@ -339,13 +348,47 @@ function parSolve(nodes,size){
   for(let i=nodes.length;i<size;i++) rows.push({i,e:0,t:"пустой узел",s:"круг всё равно его оплачивает"});
   R.sum=rows.reduce((s,r)=>s+(r.e||0),0); R.total=R.sum*R.mult;
   const pct=eN?(eN.pct||100):0;
-  R.obj={mats,subs,hasFire,T,form,v,massTot,volTot,rhoObj,ether:!!eN,pct,hold:eN?(pct<HOLD_MIN?0:HOLD_BASE_S*pct/100):0};
+  R.obj={mats,subs,hasFire,T,form,v,massTot,volTot,rhoObj,ether:!!eN,pct,parts,flameL:flame?flame.L:0,hold:eN?(pct<HOLD_MIN?0:HOLD_BASE_S*pct/100):0};
   if(form!=="native"&&!eN) warn.push("Без эфира форма не держится: через миг всё распадётся в естественную форму.");
   if(eN&&pct<HOLD_MIN) warn.push(`Эфира ${pct}% — меньше трети нужного: форма рассыпается почти сразу.`);
   if(waste.size) warn.push("Лишние узлы платят 1,2× за место, но ничего не делают.");
   R.name=nameOf(R.obj);
   return R;
 }
+
+/* ===================== УРОН ===================== */
+/* Урон по человеку, 100 = смерть. Шкала как в дуэльном зале:
+   0,1 за джоуль удара, 0,4 за килоджоуль тепла по телу. ПРЕДЛОЖЕНО, НЕ КАНОН.
+   Удар: ½·m·v² × твёрдость × форма. Жидкость и грязь разбрызгиваются.
+   Жар: пламя отдаёт оплаченное тепло (6 кДж/л при 900°), вещество — долю
+   своего тепла при касании. Горячее поджигает одежду: дальше горит чужое. */
+const KIN_BY={solid:1,liquid:0.3,mud:0.15,gas:0.02,flame:0};
+const FORM_HIT={spike:1.5,sphere:1,native:1,stream:0.8,sheet:0.4,shell:0.3};
+const CONTACT={solid:0.1,liquid:0.3,mud:0.3,gas:0.2};
+const BURN_HP=15;
+function stateOf(o){
+  if(!o.subs.length) return "flame";
+  const has=m=>o.subs.includes(m);
+  if(has("water")&&has("earth")) return o.T<0?"solid":"mud";
+  if(o.subs.length>1) return "gas";
+  const p=physPhase(THERMO[o.subs[0]],o.T); return p===0?"solid":p===1?"liquid":"gas";
+}
+function damageOf(o){
+  if(!o.v) return {hp:0,still:true};
+  const st=stateOf(o), ke=0.5*o.massTot*o.v*o.v;
+  const ff=st==="solid"?(FORM_HIT[o.form]??1):(o.form==="sheet"?0.5:o.form==="stream"?0.8:1);
+  const keEff=ke*KIN_BY[st]*ff;
+  const flameQ=o.flameL?6*o.flameL*Math.max(0,(o.T-37)/863):0;
+  const c=CONTACT[st]||0.2;
+  let hot=0,cold=0;
+  // обжигает выше 50°, обмораживает ниже нуля; комнатная вода не ранит
+  (o.parts||[]).forEach(p=>{ const d=H(p.m,o.T)-H(p.m,37);
+    if(o.T>50) hot+=p.kg*d*c; else if(o.T<0) cold+=p.kg*(-d)*c*0.5; });
+  const burn=(o.flameL>0||o.T>=300)?BURN_HP:0;
+  const hp=keEff*0.1+(flameQ+hot+cold)*0.4+burn;
+  return {hp,ke,keEff,st,ff,flameQ,hot,cold,burn};
+}
+function hurtWord(hp){ return hp<1?"безвредно":hp<10?"ушиб, царапина":hp<35?"ранит":hp<70?"тяжело ранит":hp<100?"калечит":"убьёт"; }
 
 /* ===================== НАЗВАНИЯ ЯВЛЕНИЙ ===================== */
 const SUB={
@@ -645,8 +688,22 @@ function renderResult(R){
       <div><span>форма</span><b>${FORM_RU[o.form]}</b></div><div><span>скорость</span><b>${o.v?o.v+" м/с":"стоит"}</b></div>
       ${o.form!=="native"?`<div><span>форма держится</span><b>${!o.ether?"распадётся":o.hold<1?"миг":"~"+fmt(o.hold,0)+" с"}</b></div>`:""}
     </div>
+    ${dmgHTML(o)}
     <table class="cost">${rows}<tr class="tot"><td>сумма ${fmtKJ(r.sum)} × 1,2<sup>${r.size}</sup> = ×${fmt(r.mult,2)}</td><td>${fmtKJ(r.total)}</td></tr></table>
     <div class="eyebrow" style="margin-top:12px">Кому по силам</div><div class="ranks">${ranks}</div>`;
+}
+function dmgHTML(o){
+  const d=damageOf(o);
+  if(d.still) return `<div class="dmg"><div class="num">0</div><div class="word k0">урона нет</div><ul><li>стоит на месте — по врагу не бьёт; нужен разгон воздухом</li></ul></div>`;
+  const k=d.hp<1?0:d.hp<35?1:d.hp<100?2:3, parts=[];
+  if(d.ke>0.5) parts.push(`удар ${fmt(d.ke,0)} Дж${d.keEff<d.ke*0.95?` → в цель ${fmt(d.keEff,0)}`:d.ff>1?` × острие`:""} = ${fmt(d.keEff*0.1,0)}`);
+  if(d.flameQ>0.5) parts.push(`пламя ${fmtKJ(d.flameQ)} = ${fmt(d.flameQ*0.4,0)}`);
+  if(d.hot>0.5) parts.push(`жар при касании ${fmtKJ(d.hot)} = ${fmt(d.hot*0.4,0)}`);
+  if(d.cold>0.5) parts.push(`обморожение ${fmtKJ(d.cold)} = ${fmt(d.cold*0.4,0)}`);
+  if(d.burn) parts.push(`поджог одежды +${d.burn}`);
+  if(d.st==="mud"||d.st==="liquid") parts.push(d.st==="mud"?"грязь разлетается брызгами":"вода разбрызгивается");
+  return `<div class="dmg"><div class="num">${fmt(Math.min(d.hp,999),0)}<small> / 100</small></div><div class="word k${k}">урон по человеку · ${hurtWord(d.hp)}</div>
+    <ul>${parts.map(x=>`<li>${x}</li>`).join("")||"<li>ничего, что ранит</li>"}</ul></div>`;
 }
 function renderMind(){
   const st=stage(), xs=xpStage(), next=XP_AT[xs+1];
