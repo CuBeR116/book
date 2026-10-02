@@ -1,0 +1,454 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Дуэльный зал Академии</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=Alegreya+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Плита дуэльного зала: сцена сверху, под ней карточка угрозы и стопка ответов.
+   Один мир — тёмный, как в конструкторе кругов. */
+:root{
+  --ink:#070a0f; --plate:#0d131b; --plate2:#111a24; --rule:#1d2b38; --rule-hi:#2d4558;
+  --text:#9fb3c4; --hi:#e3eef6; --dim:#5f788b;
+  --eter:#7fd4ff; --fire:#ff9348; --ok:#7cc6a1; --warn:#e07a5f; --stone:#a39a8c;
+  --f-display:"Forum","Cormorant",Georgia,serif;
+  --f-body:"Alegreya Sans","Segoe UI",system-ui,sans-serif;
+  --f-data:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ink);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.45;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:18px 48px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;margin-bottom:14px}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,5vw,40px);color:var(--hi);margin:0;letter-spacing:.02em;text-wrap:balance}
+.wave{font-family:var(--f-data);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.wave b{color:var(--eter);font-weight:500}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{background:var(--plate);border:1px solid var(--rule);padding:9px 11px;min-width:0}
+.stat .k{font-family:var(--f-data);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.stat .v{font-family:var(--f-data);font-size:15px;color:var(--hi);font-variant-numeric:tabular-nums;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:3px;background:var(--rule);margin-top:7px}
+.bar i{display:block;height:100%;background:var(--ok);transition:width .5s}
+.bar.e i{background:var(--eter)}
+
+.scene{background:radial-gradient(ellipse at 50% 60%,#0f1a25 0%,var(--ink) 75%);border:1px solid var(--rule);position:relative}
+.scene svg{display:block;width:100%;height:auto;max-width:100%}
+
+.threat{background:var(--plate);border:1px solid var(--rule);padding:14px 15px}
+.eyebrow{font-family:var(--f-data);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.threat h2{font-family:var(--f-display);font-weight:400;font-size:26px;color:var(--fire);margin:2px 0 4px}
+.threat p{margin:0 0 10px;color:var(--text)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px 14px;font-family:var(--f-data);font-size:12.5px}
+.kv div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--rule);padding:3px 0}
+.kv span{color:var(--dim)} .kv b{color:var(--hi);font-weight:400;font-variant-numeric:tabular-nums}
+.window{margin-top:10px;font-family:var(--f-data);font-size:12.5px;color:var(--text)}
+.window b{color:var(--eter);font-weight:500}
+
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{background:var(--plate);border:1px solid var(--rule);transition:border-color .15s}
+.opt.sel{border-color:var(--eter);background:var(--plate2)}
+.opt button.head{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:10px 12px;align-items:center}
+.opt button.head:focus-visible{outline:1px solid var(--eter);outline-offset:-1px}
+.opt .nm{font-family:var(--f-body);font-weight:700;color:var(--hi);font-size:16px}
+.opt .el{font-family:var(--f-data);font-size:11px;color:var(--dim);letter-spacing:.06em}
+.opt .cost{font-family:var(--f-data);font-size:12.5px;text-align:right;color:var(--hi);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip{display:inline-block;font-family:var(--f-data);font-size:10.5px;letter-spacing:.06em;padding:1px 6px;border:1px solid currentColor;margin-left:6px}
+.chip.ok{color:var(--ok)} .chip.bad{color:var(--warn)}
+.body{padding:2px 12px 12px;display:none}
+.opt.sel .body{display:block}
+.hint{font-size:14.5px;color:var(--text);margin:0 0 8px}
+.sl{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:2px 10px;align-items:center;margin:6px 0}
+.sl label{font-size:14px;color:var(--text)}
+.sl output{font-family:var(--f-data);font-size:12.5px;color:var(--hi);text-align:right;font-variant-numeric:tabular-nums}
+.sl input{grid-column:1/-1;width:100%;accent-color:var(--eter)}
+table.nodes{width:100%;border-collapse:collapse;font-family:var(--f-data);font-size:12px;margin-top:8px}
+table.nodes td{padding:4px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.nodes td:last-child{text-align:right;color:var(--hi);white-space:nowrap;font-variant-numeric:tabular-nums;padding-left:10px}
+table.nodes tr.tot td{border-bottom:0;color:var(--eter);padding-top:6px}
+.n-i{color:var(--dim);width:18px}
+.n-sub{display:block;color:var(--dim);font-size:11px}
+
+.act{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;text-align:center;padding:12px;border:1px solid var(--eter);color:var(--eter);font-family:var(--f-data);font-size:13px;letter-spacing:.14em;text-transform:uppercase;transition:background .15s}
+.act:hover{background:rgba(127,212,255,.08)}
+.act:focus-visible{outline:1px solid var(--hi);outline-offset:2px}
+.act.ghost{border-color:var(--rule-hi);color:var(--text)}
+.act[disabled]{opacity:.4;cursor:not-allowed}
+.btnrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+
+.result{background:var(--plate);border:1px solid var(--rule-hi);padding:14px 15px}
+.result h3{font-family:var(--f-display);font-weight:400;font-size:24px;margin:0 0 6px;color:var(--hi)}
+.result h3.good{color:var(--ok)} .result h3.bad{color:var(--warn)}
+.result p{margin:0 0 8px}
+.tutor{border-left:2px solid var(--eter);padding-left:10px;color:var(--hi)}
+.tutor .who{display:block;font-family:var(--f-data);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:2px}
+.best{font-family:var(--f-data);font-size:12.5px;color:var(--text);background:var(--ink);border:1px dashed var(--rule-hi);padding:8px 10px;margin:8px 0 12px}
+.best b{color:var(--ok);font-weight:500}
+.foot{margin-top:22px;font-size:13px;color:var(--dim);max-width:72ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Дуэльный зал</h1>
+    <div class="wave" id="waveLbl"></div>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <div class="stats">
+        <div class="stat"><div class="k">Тело</div><div class="v" id="hpV"></div><div class="bar"><i id="hpB"></i></div></div>
+        <div class="stat"><div class="k">Этер</div><div class="v" id="etV"></div><div class="bar e"><i id="etB"></i></div></div>
+        <div class="stat"><div class="k">Проток</div><div class="v">5 мл/с · 100 кВт</div><div class="bar e"><i style="width:100%;opacity:.35"></i></div></div>
+      </div>
+      <div class="scene"><svg id="scene" viewBox="0 0 600 230" role="img" aria-label="Дуэльная площадка: наставник слева, вы справа"></svg></div>
+      <div class="threat" id="threat"></div>
+      <div id="resultBox"></div>
+    </div>
+    <div class="col">
+      <div class="eyebrow">Ваш ответ · круг на 3 узла, ×1,73</div>
+      <div class="opts" id="opts"></div>
+      <button class="act" id="go" type="button">Ответить</button>
+    </div>
+  </div>
+
+  <p class="foot">Прототип. Цена считается по формулам конструктора кругов v24: стихии по канону, тепло и разгон по физике (разгон — стихия воздуха: ×2, КПД 10%), эфир держит форму, круг на 3 узла умножает сумму на 1,2³. Вы — студент: 95 мл этера по 20 кДж/мл. Урон: 0,1 за джоуль удара, 0,4 за килоджоуль тепла по телу.</p>
+</div>
+
+<script>
+/* ---------- физика (как в конструкторе v24) ---------- */
+const SLOT=Math.pow(1.2,3), FLOW=100, RES=1900, G=20, ETA=0.10;
+const stab=(kg,rho)=>0.5*(kg*1000/100)*(1000/rho);        // эфир держит форму, кДж
+const kin=(m,v)=>2*0.5*m*v*v/1000/ETA;                    // разгон воздухом: ×2 цена воздуха, кДж
+const ICE_KJ_KG=4.19*20+334+2.1*5;                        // вода 20° → лёд −5°
+const BOIL_KJ_KG=4.19*80, VAP=2257;                       // нагреть до 100°, выкипятить
+const fmtKJ=v=>v>=1000?(v/1000).toLocaleString("ru-RU",{maximumFractionDigits:2})+" МДж":v.toLocaleString("ru-RU",{maximumFractionDigits:v<10?1:0})+" кДж";
+const fmtN=(v,d=1)=>v.toLocaleString("ru-RU",{maximumFractionDigits:d});
+
+/* ---------- волны ---------- */
+const WAVES=[
+ {key:"fire",name:"Огненный шар",
+  text:"Наставник собирает пятиузловой круг. Над ладонью вспыхивает шар горящего газа и летит в вас.",
+  mass:0.003,rho:0.33,gas:true,v:15,dist:20,cast:1.5,flame:250,stored:0,contact:0,temp:900,
+  lead:"Огонь — это горячий газ. Подумайте, что ему мешает, а не что его «перебивает»."},
+ {key:"stone",name:"Горящий камень",
+  text:"Второй круг: камень раскалён до 600° и обёрнут пламенем. Летит быстрее и тяжелее.",
+  mass:2,rho:2500,gas:false,v:25,dist:20,cast:2.0,flame:60,stored:2*0.84*580,contact:0.10,temp:600,
+  lead:"У камня есть масса. То, что сработало против газа, против массы может не сработать."}
+];
+WAVES.forEach(w=>{w.flight=w.dist/w.v;w.window=w.cast+w.flight;w.ke=0.5*w.mass*w.v*w.v;
+  w.heat=w.flame+w.contact*w.stored;w.p=w.mass*w.v;});
+
+/* ---------- ответы ---------- */
+const OPTS=[
+ {id:"dodge",name:"Уклониться",el:"без магии",
+  hint:"Шаг в сторону. Бесплатно, но телу нужно ~0,9 с, чтобы уйти с линии.",
+  params:[],
+  nodes:()=>[],
+  resolve:(w)=>w.flight>=0.9
+    ?{heat:0,ke:0,scald:0,anim:"dodge",say:`Полёт ${fmtN(w.flight,2)} с — успели шагнуть. Без единого миллилитра. Помните: дешевле всего то, чего не пришлось делать.`}
+    :{heat:w.heat*0.5,ke:w.ke*0.5,scald:0,anim:"graze",say:`Полёт всего ${fmtN(w.flight,2)} с. Тело не успело уйти целиком — удар пришёлся вскользь.`}},
+
+ {id:"wind",name:"Порыв ветра",el:"воздух · разгон · пустой узел",
+  hint:"Толкнуть кубометр воздуха поперёк линии полёта. Воздух берётся вокруг, создавать не нужно.",
+  params:[{k:"v",label:"скорость ветра",min:3,max:30,step:1,val:12,unit:"м/с"}],
+  nodes:(p)=>[
+    {t:"воздух · удержать 1 м³",s:"1,2 кг ≈ 1,38 л по массе × 2",e:2*1.2/870*1000},
+    {t:`разгон до ${p.v} м/с`,s:"2 × ½·m·v² / КПД 10%",e:kin(1.2,p.v)},
+    {t:"пустой узел",s:"круг на 3 узла, третий не нужен",e:0}],
+  resolve:(w,p)=>{
+    if(w.gas) return p.v>=3?{heat:0,ke:0,scald:0,anim:"blow",say:"Шар весит граммы и сам сделан из газа — его уносит вместе с воздухом. Дешевле ответа на огонь почти не бывает."}
+      :{heat:w.heat,ke:0,scald:0,anim:"hit",say:"Ветер слишком слабый."};
+    const dv=0.01*1.2*p.v/w.mass, shift=dv*w.flight, strip=p.v>=10;
+    if(shift>=0.6) return {heat:0,ke:0,scald:0,anim:"blow",say:"Камень снесло с линии."};
+    return {heat:(strip?0:w.flame)+w.contact*w.stored,ke:w.ke,scald:0,anim:strip?"strip":"hit",
+      say:`Ветер сдвинул камень всего на ${fmtN(shift*100,0)} см: у двух килограммов маленькое сечение и большая инерция. ${strip?"Огненную оболочку сорвало — она газ. Но раскалённый камень долетел.":"Даже пламя не сорвало."}`};
+  }},
+
+ {id:"water",name:"Водяной щит",el:"вода · эфир · пустой узел",
+  hint:"Плёнка воды перед собой. Воды во дворе нет — создаём с нуля (×2). Вода отлично ест тепло: ~2,6 МДж на литр, если выкипит.",
+  params:[{k:"a",label:"площадь",min:0.3,max:2,step:0.1,val:1,unit:"м²"},
+          {k:"mm",label:"толщина",min:0.2,max:20,step:0.2,val:1,unit:"мм"}],
+  nodes:(p)=>{const L=p.a*p.mm;return[
+    {t:`вода · создать ${fmtN(L,2)} л`,s:"1,5 × 2 × литры × пластина 1,3",e:1.5*2*L*1.3},
+    {t:"эфир держит плёнку",s:`0,5 × (${fmtN(L*1000,0)} г / 100) × (1000/1000)`,e:stab(L,1000)},
+    {t:"пустой узел",s:"",e:0}];},
+  resolve:(w,p)=>{
+    const L=p.a*p.mm, cov=Math.min(1,p.a/0.5);
+    const covered=w.heat*cov, absorbed=Math.min(covered,L*(BOIL_KJ_KG+VAP));
+    const steamKg=Math.max(0,absorbed-L*BOIL_KJ_KG)/VAP, scald=0.3*steamKg*VAP;
+    const heat=w.heat-absorbed, ke=Math.max(0,w.ke-0.5*p.mm);
+    let say=[];
+    if(cov<1) say.push(`Щит ${fmtN(p.a,1)} м² закрыл только ${fmtN(cov*100,0)}% тела — остальное прошло мимо края.`);
+    if(steamKg>0.001) say.push(`Тонкая плёнка не просто нагрелась — ${fmtN(steamKg*1000,0)} г выкипело прямо у лица. Пар на сто градусов обжёг вас: защитились от огня, получили пар.`);
+    else if(absorbed>0) say.push(`Вода забрала ${fmtKJ(absorbed)} тепла и даже не закипела.`);
+    if(!w.gas) say.push("Но вода не держит массу: камень прошил плёнку и ударил в полную силу.");
+    if(heat>1&&cov>=1&&w.gas) say.push("Плёнки не хватило, часть жара дошла.");
+    return {heat,ke,scald,anim:steamKg>0.001?"water-steam":(w.gas?"water":"water-pierce"),say:say.join(" ")||"Огонь погас на воде."};
+  }},
+
+ {id:"earth",name:"Земляная стена",el:"земля · эфир · пустой узел",
+  hint:"Поднять пласт земли из-под ног: земля уже есть, создавать не нужно (×1). Но держать массу эфиром дорого.",
+  params:[{k:"a",label:"площадь",min:0.3,max:1.5,step:0.1,val:0.8,unit:"м²"},
+          {k:"cm",label:"толщина",min:1,max:10,step:0.5,val:3,unit:"см"}],
+  nodes:(p)=>{const L=p.a*p.cm*10,kg=L*1.5;return[
+    {t:`земля · поднять ${fmtN(L,0)} л (${fmtN(kg,0)} кг)`,s:"1 × литры × пластина 1,3",e:L*1.3},
+    {t:"эфир держит стену",s:`0,5 × (${fmtN(kg*1000,0)} г / 100) × (1000/1500)`,e:stab(kg,1500)},
+    {t:"пустой узел",s:"",e:0}];},
+  resolve:(w,p)=>{
+    const cov=Math.min(1,p.a/0.5), cap=180*p.cm;
+    const keIn=w.ke*cov, stopped=keIn<=cap;
+    const ke=w.ke*(1-cov)+Math.max(0,keIn-cap);
+    const heat=w.heat*(1-cov)+(stopped?0:w.contact*w.stored*cov);
+    let say=[];
+    if(cov<1) say.push(`Стена ${fmtN(p.a,1)} м² узковата — закрыла ${fmtN(cov*100,0)}% тела.`);
+    if(w.gas) say.push("Пламя расплескалось по камню. Земля жар не боится.");
+    else say.push(stopped?`${fmtN(p.cm,1)} см земли выдержали ${fmtN(w.ke,0)} Дж удара — камень застрял в стене.`
+      :`Стена держит ~${fmtN(cap,0)} Дж, а удар ${fmtN(w.ke,0)} Дж. Камень пробил её, хоть и ослаб.`);
+    return {heat,ke,scald:0,anim:stopped||w.gas?"wall":"wall-pierce",say:say.join(" ")};
+  }},
+
+ {id:"rock",name:"Встречный камень",el:"земля · разгон · эфир",
+  hint:"Поднять камень из-под ног и метнуть навстречу. Сбивает, если импульс хотя бы 60% от чужого.",
+  params:[{k:"m",label:"масса камня",min:0.5,max:5,step:0.5,val:1,unit:"кг"},
+          {k:"v",label:"скорость",min:5,max:30,step:1,val:15,unit:"м/с"}],
+  nodes:(p)=>[
+    {t:`земля · поднять ${fmtN(p.m,1)} кг`,s:"1 × литры (ρ 1500)",e:p.m/1.5},
+    {t:`разгон до ${p.v} м/с`,s:"2 × ½·m·v² / КПД 10%",e:kin(p.m,p.v)},
+    {t:"эфир держит камень",s:`0,5 × (${fmtN(p.m*1000,0)} г / 100) × (1000/1500)`,e:stab(p.m,1500)}],
+  resolve:(w,p)=>{
+    if(w.gas) return {heat:w.heat,ke:0,scald:0,anim:"rock-through",say:"Камень прошил шар насквозь и улетел. Огонь — газ: массой его не сбить."};
+    const pm=p.m*p.v, need=0.6*w.p, f=Math.min(1,pm/need);
+    if(f>=1) return {heat:0,ke:0,scald:0,anim:"rock-hit",say:`Импульс ${fmtN(pm,0)} против ${fmtN(w.p,0)} кг·м/с — камни разлетелись в стороны, пламя сорвало ударом. Почти даром.`};
+    return {heat:w.heat*(1-f),ke:w.ke*(1-f),scald:0,anim:"rock-glance",
+      say:`Импульса ${fmtN(pm,0)} кг·м/с мало, нужно хотя бы ${fmtN(need,0)}. Вы только отклонили камень, и он задел вас.`};
+  }},
+
+ {id:"cool",name:"Вытянуть жар",el:"огонь · эфир-наводка · пустой узел",
+  hint:"Забрать тепло из летящего прямо в полёте, как умеют мастера тепловой школы. Тепло — физика: сколько забрал, столько и заплатил.",
+  params:[{k:"pct",label:"сколько забрать",min:10,max:100,step:5,val:50,unit:"%"}],
+  nodes:(p,w)=>{const Q=(w.flame+w.stored)*p.pct/100;return[
+    {t:`вытянуть ${p.pct}% тепла`,s:`из ${fmtKJ(w.flame+w.stored)} в снаряде`,e:Q},
+    {t:"эфир наводится на снаряд",s:`0,5 × (${fmtN(w.mass*1000,0)} г / 100) × (1000/${w.rho})`,e:stab(w.mass,w.rho)},
+    {t:"пустой узел",s:"",e:0}];},
+  resolve:(w,p)=>{
+    const f=p.pct/100;
+    return {heat:w.heat*(1-f),ke:w.ke,scald:0,anim:"cool",
+      say:(w.gas?"Шар потускнел. ":"Камень остыл до тёмно-красного. ")+(f<1?`Но ${100-p.pct}% жара осталось. `:"")+(!w.gas?"Удар массой никуда не делся.":"")};
+  }},
+
+ {id:"ice",name:"Ледяная стена",el:"вода · холод · эфир",
+  hint:"Создать воду и заморозить. Холод — это тоже энергия: тепло надо отнять, и на килограмм уходит ~430 кДж.",
+  params:[{k:"a",label:"площадь",min:0.3,max:1.5,step:0.1,val:0.5,unit:"м²"},
+          {k:"cm",label:"толщина",min:0.5,max:5,step:0.5,val:1,unit:"см"}],
+  nodes:(p)=>{const L=p.a*p.cm*10;return[
+    {t:`вода · создать ${fmtN(L,1)} л`,s:"1,5 × 2 × литры × пластина 1,3",e:1.5*2*L*1.3},
+    {t:"охладить до −5°",s:`${fmtN(ICE_KJ_KG,0)} кДж/кг × ${fmtN(L,1)} кг`,e:ICE_KJ_KG*L},
+    {t:"эфир держит лёд",s:`0,5 × (${fmtN(L*1000,0)} г / 100) × (1000/917)`,e:stab(L,917)}];},
+  resolve:(w,p)=>{
+    const cov=Math.min(1,p.a/0.5), cap=120*p.cm, keIn=w.ke*cov, stopped=keIn<=cap;
+    return {heat:w.heat*(1-cov),ke:w.ke*(1-cov)+Math.max(0,keIn-cap),scald:0,anim:"ice",
+      say:"Лёд встал. "+(w.gas?"Огонь растёкся по нему.":stopped?"Камень увяз во льду.":"Камень пробил лёд.")};
+  }}
+];
+
+/* ---------- состояние ---------- */
+const S={wave:0,hp:100,ether:RES,sel:"wind",phase:"choose",snap:null,par:{},last:null};
+OPTS.forEach(o=>{S.par[o.id]={};o.params.forEach(q=>S.par[o.id][q.k]=q.val);});
+const W=()=>WAVES[S.wave];
+const $=id=>document.getElementById(id);
+
+function cost(o,p,w){
+  const nodes=o.nodes(p,w), sum=nodes.reduce((s,n)=>s+n.e,0);
+  const total=nodes.length?sum*SLOT:0;
+  return {nodes,sum,total,ml:total/G,time:total/FLOW};
+}
+function evaluate(o,p,w,ether){
+  const c=cost(o,p,w), inTime=c.time<=w.window+1e-9;
+  const over=Math.max(0,c.total-ether), canPay=over<=RES*0.5;
+  let r;
+  if(!canPay) r={heat:w.heat,ke:w.ke,scald:0,anim:"hit",fail:"reserve",say:"Этера на такой круг нет даже с перерасходом телом. Круг не собрался."};
+  else if(!inTime) r={heat:w.heat,ke:w.ke,scald:0,anim:"hit",fail:"time",say:`Круг собирается ${fmtN(c.time,1)} с, а окно — ${fmtN(w.window,1)} с. Не успели: этер ушёл в недособранный круг.`};
+  else r=o.resolve(w,p);
+  const spent=!canPay?0:(!inTime?FLOW*w.window:c.total);
+  const dmg=r.ke*0.1+r.heat*0.4+r.scald*0.4;
+  return {c,r,inTime,canPay,over,spent,dmg};
+}
+/* лучший ответ: перебор сетки ползунков */
+function bestAnswer(w,ether){
+  let best=null;
+  OPTS.forEach(o=>{
+    const grids=o.params.map(q=>{const a=[];for(let v=q.min;v<=q.max+1e-9;v+=q.step)a.push(+v.toFixed(3));return a;});
+    const rec=(i,p)=>{
+      if(i===grids.length){const e=evaluate(o,p,w,ether);
+        const sc=[Math.round(e.dmg),e.spent];
+        if(!best||sc[0]<best.sc[0]||(sc[0]===best.sc[0]&&sc[1]<best.sc[1])) best={o,p:{...p},e,sc};return;}
+      grids[i].forEach(v=>rec(i+1,{...p,[o.params[i].k]:v}));
+    };
+    rec(0,{});
+  });
+  return best;
+}
+const pDesc=(o,p)=>o.params.map(q=>`${fmtN(p[q.k],q.step<1?1:0)} ${q.unit}`).join(", ");
+
+/* ---------- отрисовка ---------- */
+function renderStats(){
+  $("hpV").textContent=`${Math.max(0,Math.round(S.hp))} / 100`;
+  $("hpB").style.width=Math.max(0,S.hp)+"%";
+  $("etV").textContent=`${fmtN(Math.max(0,S.ether)/G,1)} мл · ${fmtKJ(Math.max(0,S.ether))}`;
+  $("etB").style.width=Math.max(0,S.ether/RES*100)+"%";
+  $("waveLbl").innerHTML=`обучение · волна <b>${S.wave+1}</b> из ${WAVES.length}`;
+}
+function renderThreat(){
+  const w=W();
+  $("threat").innerHTML=`<div class="eyebrow">Летит в вас</div><h2>${w.name}</h2><p>${w.text}</p>
+   <div class="kv">
+    <div><span>масса</span><b>${w.mass<1?fmtN(w.mass*1000,0)+" г":fmtN(w.mass,1)+" кг"}</b></div>
+    <div><span>скорость</span><b>${w.v} м/с</b></div>
+    <div><span>температура</span><b>${w.temp}°</b></div>
+    <div><span>тепло в цель</span><b>${fmtKJ(w.heat)}</b></div>
+    <div><span>удар</span><b>${fmtN(w.ke,w.ke<10?1:0)} Дж</b></div>
+    <div><span>импульс</span><b>${fmtN(w.p,w.p<1?2:0)} кг·м/с</b></div>
+   </div>
+   <div class="window">Круг наставника собирается ${fmtN(w.cast,1)} с, полёт ${w.dist} м — ${fmtN(w.flight,2)} с. Окно на ответ: <b>${fmtN(w.window,2)} с</b> — за это время вы продавите до ${fmtKJ(FLOW*w.window)}.</div>
+   <p class="hint" style="margin:10px 0 0"><i>${w.lead}</i></p>`;
+}
+function cardParts(o){
+  const w=W(), p=S.par[o.id], e=evaluate(o,p,w,S.ether), c=e.c;
+  const chip=!e.canPay?`<span class="chip bad">нет этера</span>`:(!e.inTime?`<span class="chip bad">${fmtN(c.time,1)} с · не успеть</span>`:`<span class="chip ok">${fmtN(c.time,1)} с</span>`);
+  const cost=`${c.nodes.length?fmtN(c.ml,1)+" мл":"0 мл"}${chip}`;
+  const rows=c.nodes.map((n,i)=>`<tr><td class="n-i">${i+1}</td><td>${n.t}<span class="n-sub">${n.s}</span></td><td>${fmtKJ(n.e)}</td></tr>`).join("");
+  const calc=c.nodes.length?`<table class="nodes">${rows}
+      <tr class="tot"><td></td><td>сумма ${fmtKJ(c.sum)} × 1,73</td><td>${fmtKJ(c.total)}</td></tr></table>
+      ${e.over>0&&e.canPay?`<p class="hint" style="color:var(--warn);margin-top:6px">Сверх резерва: ${fmtN(e.over/(37000*0.5)*1000,0)} г жира — вытянете телом.</p>`:""}`:"";
+  return {cost,calc};
+}
+function renderOpts(){
+  $("opts").innerHTML=OPTS.map(o=>{
+    const p=S.par[o.id], sel=S.sel===o.id, parts=cardParts(o);
+    const sl=o.params.map(q=>`<div class="sl"><label for="${o.id}-${q.k}">${q.label}</label><output id="${o.id}-${q.k}-o">${fmtN(p[q.k],q.step<1?1:0)} ${q.unit}</output>
+      <input type="range" id="${o.id}-${q.k}" data-o="${o.id}" data-k="${q.k}" min="${q.min}" max="${q.max}" step="${q.step}" value="${p[q.k]}"></div>`).join("");
+    return `<div class="opt ${sel?"sel":""}" data-id="${o.id}">
+      <button class="head" type="button" data-pick="${o.id}" aria-expanded="${sel}">
+        <span><span class="nm">${o.name}</span><br><span class="el">${o.el}</span></span>
+        <span class="cost" id="cost-${o.id}">${parts.cost}</span>
+      </button>
+      <div class="body"><p class="hint">${o.hint}</p>${sl}<div id="calc-${o.id}">${parts.calc}</div></div></div>`;
+  }).join("");
+  $("opts").querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{if(S.phase!=="choose")return;S.sel=b.dataset.pick;renderOpts();});
+  $("opts").querySelectorAll("input[type=range]").forEach(r=>r.oninput=()=>{
+    const o=OPTS.find(x=>x.id===r.dataset.o), q=o.params.find(x=>x.k===r.dataset.k);
+    S.par[o.id][q.k]=+r.value;
+    $(`${o.id}-${q.k}-o`).textContent=`${fmtN(+r.value,q.step<1?1:0)} ${q.unit}`;
+    const parts=cardParts(o); $(`cost-${o.id}`).innerHTML=parts.cost; $(`calc-${o.id}`).innerHTML=parts.calc;
+  });
+  $("go").disabled=S.phase!=="choose";
+}
+
+/* ---------- сцена ---------- */
+const EX=70, YX=530, Y=150;
+function baseScene(){
+  const ring=(x,c,r)=>`<g transform="translate(${x},${Y-62})" fill="none" stroke="${c}">
+    <circle r="${r}" stroke-width="1.4" opacity=".9"/><circle r="${r*0.72}" stroke-width=".8" opacity=".6"/>
+    <polygon points="${[0,1,2].map(k=>{const a=-Math.PI/2+k*2*Math.PI/3;return (r*0.72*Math.cos(a)).toFixed(1)+","+(r*0.72*Math.sin(a)).toFixed(1);}).join(" ")}" stroke-width=".8" opacity=".7"/></g>`;
+  const fig=(x,c,lbl,face)=>`<g transform="translate(${x},${Y})">
+    <ellipse cx="0" cy="44" rx="26" ry="5" fill="#000" opacity=".5"/>
+    <path d="M -13 42 L -9 2 Q 0 -6 9 2 L 13 42 Z" fill="${c}" opacity=".9"/>
+    <circle cx="0" cy="-12" r="10" fill="${c}"/>
+    <text x="0" y="66" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#5f788b" letter-spacing="1.2">${lbl}</text></g>`;
+  return `<defs>
+     <radialGradient id="fb"><stop offset="0" stop-color="#fff3c4"/><stop offset=".45" stop-color="#ff9348"/><stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/></radialGradient>
+     <radialGradient id="glow"><stop offset="0" stop-color="#ff9348" stop-opacity=".8"/><stop offset="1" stop-color="#ff9348" stop-opacity="0"/></radialGradient>
+   </defs>
+   <line x1="20" y1="${Y+44}" x2="580" y2="${Y+44}" stroke="#1d2b38"/>
+   ${[...Array(11)].map((_,i)=>`<line x1="${EX+i*(YX-EX)/10}" y1="${Y+44}" x2="${EX+i*(YX-EX)/10}" y2="${Y+(i%5?48:52)}" stroke="#2d4558"/>`).join("")}
+   <text x="${(EX+YX)/2}" y="${Y+66}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#5f788b">20 м</text>
+   ${ring(EX,"#ff9348",26)}${ring(YX,"#7fd4ff",22)}
+   ${fig(EX,"#3a4d5e","НАСТАВНИК")}${fig(YX,"#6f8ea6","ВЫ")}
+   <g id="fx"></g><g id="proj"></g>`;
+}
+function drawScene(){ $("scene").innerHTML=baseScene(); idleProj(); }
+function projSVG(w,x,y,a=1){
+  return w.gas?`<circle cx="${x}" cy="${y}" r="15" fill="url(#fb)" opacity="${a}"/>`
+   :`<circle cx="${x}" cy="${y}" r="16" fill="url(#glow)" opacity="${a*0.9}"/><circle cx="${x}" cy="${y}" r="7.5" fill="#4a3a30" stroke="#ff9348" stroke-width="1.6" opacity="${a}"/>`;
+}
+function idleProj(){ $("proj").innerHTML=projSVG(W(),EX+26,Y-62,0.9); }
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function animate(res,done){
+  const w=W(), fx=$("fx"), pr=$("proj"), a=res.r.anim, failed=res.r.fail;
+  const wallX=YX-60, T=reduce?1:1300; let t0=null;
+  const kind=failed?"hit":a;
+  const wallCol={wall:"#8a7f70","wall-pierce":"#8a7f70",water:"#7fd4ff","water-steam":"#7fd4ff","water-pierce":"#7fd4ff",ice:"#dff4ff"}[kind];
+  if(wallCol) fx.innerHTML=`<rect x="${wallX-5}" y="${Y-80}" width="10" height="124" fill="${wallCol}" opacity="${kind.startsWith("water")?.45:.85}"/>`;
+  if(kind==="blow"||kind==="strip") fx.innerHTML=[0,1,2,3].map(i=>`<path d="M ${300+i*30} ${Y+30} q 20 -60 0 -120" stroke="#9fb3c4" stroke-width="1" fill="none" opacity=".5"/>`).join("");
+  function frame(ts){
+    if(!t0)t0=ts; const k=Math.min(1,(ts-t0)/T);
+    let x=EX+26+(YX-EX-26)*k, y=Y-62+ 8*Math.sin(k*Math.PI), alpha=1, extra="";
+    if(kind==="blow"&&k>0.45){const q=(k-0.45)/0.55;x=EX+26+(YX-EX-26)*0.45+120*q;y=Y-62-150*q*q;}
+    if(kind==="dodge"&&k>0.8) extra="";
+    if((kind==="wall"||kind==="water"||kind==="water-steam"||kind==="ice")&&x>wallX-12){x=wallX-12;alpha=Math.max(0,1-(k-0.75)*4);}
+    if(kind==="rock-hit"){const m=EX+(YX-EX)*0.55;const mx=YX-(YX-m)*Math.min(1,k/0.55);
+      extra=`<circle cx="${mx}" cy="${Y-62}" r="7" fill="#a39a8c"/>`;
+      if(x>=m-10){x=m-10+ (k-0.55)*80;y=Y-62-(k-0.55)*260;extra=`<circle cx="${m+ (k-0.55)*90}" cy="${Y-62+(k-0.55)*180}" r="7" fill="#a39a8c"/>`;}}
+    if(kind==="rock-through"){const mx=YX-(YX-EX)*k*1.1;extra=`<circle cx="${mx}" cy="${Y-58}" r="7" fill="#a39a8c"/>`;}
+    if(kind==="cool") alpha=1-0.6*k;
+    let body=projSVG(w,x,y,alpha);
+    if(kind==="strip"&&k>0.45) body=`<circle cx="${x}" cy="${y}" r="7.5" fill="#4a3a30" stroke="#c96a3a" stroke-width="1.2"/>`;
+    pr.innerHTML=body+extra;
+    if(k<1) requestAnimationFrame(frame);
+    else{
+      if(kind==="water-steam") fx.innerHTML+=[...Array(7)].map((_,i)=>`<circle cx="${wallX+10+i*6}" cy="${Y-70-i*6}" r="${10+i*2}" fill="#cfd8de" opacity="${.35-i*.03}"/>`).join("");
+      const hurt=res.dmg>0.5;
+      if(hurt) fx.innerHTML+=`<circle cx="${YX}" cy="${Y-10}" r="34" fill="${w.gas||res.r.heat>res.r.ke*0.25?"#ff9348":"#e07a5f"}" opacity=".35"/>`;
+      if(kind==="dodge") pr.innerHTML="";
+      done();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- ход ---------- */
+function answer(){
+  if(S.phase!=="choose") return;
+  const w=W(), o=OPTS.find(x=>x.id===S.sel), p=S.par[o.id];
+  S.snap={hp:S.hp,ether:S.ether};
+  const res=evaluate(o,p,w,S.ether);
+  const best=bestAnswer(w,S.ether);
+  S.phase="anim"; renderOpts();
+  animate(res,()=>{
+    S.hp-=res.dmg; S.ether-=res.spent;
+    S.phase="result"; S.last={o,p,res,best};
+    renderStats(); renderResult(); renderOpts();
+  });
+}
+function renderResult(){
+  const {o,p,res,best}=S.last, w=W(), dead=S.hp<=0, clean=res.dmg<0.5;
+  const title=dead?"Вы бы погибли":clean?"Чисто":res.dmg<25?"Задело":"Тяжёлое попадание";
+  const cls=clean?"good":"bad";
+  const lines=[];
+  if(res.r.ke>0.5) lines.push(`удар ${fmtN(res.r.ke,0)} Дж`);
+  if(res.r.heat>0.5) lines.push(`жар ${fmtKJ(res.r.heat)}`);
+  if(res.r.scald>0.5) lines.push(`пар ${fmtKJ(res.r.scald)}`);
+  const bestTxt=best?`${best.o.name}${best.o.params.length?" ("+pDesc(best.o,best.p)+")":""} — ${best.e.c.total?fmtKJ(best.e.c.total)+", "+fmtN(best.e.c.ml,1)+" мл":"0 мл"}${best.sc[0]>0?", урон "+best.sc[0]:" без урона"}`:"—";
+  const last=S.wave===WAVES.length-1;
+  $("resultBox").innerHTML=`<div class="result">
+    <h3 class="${cls}">${title}</h3>
+    <p class="tutor"><span class="who">Наставник</span>${res.r.say}${dead?" Я погасил удар в последний миг. В настоящем бою второго шанса не будет.":""}</p>
+    <p style="font-family:var(--f-data);font-size:12.5px">Урон: ${clean?"нет":Math.round(res.dmg)+" ("+lines.join(", ")+")"} · потрачено ${fmtN(res.spent/G,1)} мл</p>
+    <div class="best">Самый дешёвый ответ из возможных: <b>${bestTxt}</b></div>
+    <div class="btnrow">
+      <button class="act ghost" type="button" id="retry">Переиграть волну</button>
+      ${last?`<button class="act" type="button" id="restart">Начать заново</button>`:`<button class="act" type="button" id="next">Следующая волна</button>`}
+    </div></div>`;
+  $("retry").onclick=()=>{S.hp=S.snap.hp;S.ether=S.snap.ether;toChoose();};
+  if($("next")) $("next").onclick=()=>{if(S.hp<=0)S.hp=1;S.wave++;toChoose();};
+  if($("restart")) $("restart").onclick=()=>{S.wave=0;S.hp=100;S.ether=RES;toChoose();};
+}
+function toChoose(){ S.phase="choose"; $("resultBox").innerHTML=""; drawScene(); renderAll(); }
+function renderAll(){ renderStats(); renderThreat(); renderOpts(); }
+$("go").onclick=answer;
+drawScene(); renderAll();
+</script>
