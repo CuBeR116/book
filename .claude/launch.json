@@ -1,0 +1,47 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "game-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "Игра"
+      ],
+      "port": 8777,
+      "url": "http://127.0.0.1:8777"
+    },
+    {
+      "name": "game-lan",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Игра/node_modules/vite/bin/vite.js",
+        "Игра",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8779",
+        "--strictPort"
+      ],
+      "port": 8779,
+      "url": "http://127.0.0.1:8779"
+    },
+    {
+      "name": "game-script",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Игра/node_modules/vite/bin/vite.js",
+        "Игра",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8783",
+        "--strictPort"
+      ],
+      "port": 8783,
+      "url": "http://127.0.0.1:8783"
+    }
+  ]
+}
