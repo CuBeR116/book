@@ -1,0 +1,27 @@
+Инструмент: встроенный image_gen. Режим: style-transfer.
+Исходники: Академия.png; Эрейн Мердаль, концепт 2.png.
+
+Use case: style-transfer.
+Edit target: Image 1, the wide aerial illustrated plan of Академия Леонхарда. Image 2 (girl in library) is ONLY a palette and drawing-style reference; do not add the girl.
+Redraw Image 1 as a polished, restrained hand-drawn dark-fantasy manhwa establishing illustration and readable campus map. Preserve its wide 16:9 framing, bird's-eye perspective, recognizable gothic architecture, exact campus organization, buildings, courtyards, mountain setting, enclosing walls, paths, arena, paddocks, labels and label associations. Main gothic academy in center rear, dormitories left, arena front left, training grounds left foreground, dining hall front center, creature enclosures right.
+Match Image 2's warm deep umber, sepia and chestnut browns, amber-gold candlelight, muted dusty plum-violet roofs/shadows, restrained tiny cyan-blue magical highlights. Make stone warm brown and ochre; background mountains softer brown/plum. Atmospheric but clearly readable.
+Simplify excessively busy architecture into coherent designed shapes. Clean confident dark ink contours, selective line weight, broad flat color masses, 2-3 tone cel shading, subtle paper texture, deliberate consistent perspective and repeatable window/roof construction. Slightly minimalist manhwa background, not photorealistic or 3D. Reduce clutter and microscopic detail substantially without removing any labeled landmark. Avoid melted buildings, incoherent stairs, random ornaments, muddy excessive texture, all-over orange wash. Keep palette variety between brown stone, muted purple roofs, dark olive vegetation and amber lights.
+Preserve all Russian text accurately, legible and refined, with simpler dark-brown plaques and fine muted-gold borders:
+"Академия Леонхарда"
+"Центр призыва и магических искусств"
+"Главный корпус"
+"Архив"
+"Зал призыва (внутри)"
+"Общежития"
+"Библиотека"
+"Кабинет Леонхарда"
+"Главный холл"
+"Стойла призванных"
+"Склад Эмерина"
+"Арена"
+"Тренировочные площадки"
+"Столовая"
+"Хозяйственный двор"
+"Загон для опасных существ"
+"Продовольственный вход".
+Preserve compass and crest in simplified drawn form. No new lore, no additional text, no watermark. Output one complete landscape image.

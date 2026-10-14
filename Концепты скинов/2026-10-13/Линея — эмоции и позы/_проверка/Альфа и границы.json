@@ -1,0 +1,308 @@
+[
+  {
+    "File": "01 Нейтральная.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "02 Мягкая улыбка.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "03 Радость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "04 Смех.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "05 Грусть.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "06 Плач.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "07 Злость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "08 Раздражение.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "09 Тревога.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "10 Страх.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "11 Удивление.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      1,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "12 Смущение.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "13 Задумчивость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "14 Сомнение.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "15 Сильная обида.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "16 Решимость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "17 Облегчение.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "File": "18 Усталость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "EdgeOpaque": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+]

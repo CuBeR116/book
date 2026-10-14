@@ -1,0 +1,6 @@
+Инструмент: встроенный image_gen.
+Исходник: Академия — манхва.png.
+
+Use case: lighting-weather.
+Edit the attached manhwa academy map to make it distinctly more ominous, dark and high-contrast. Preserve the exact wide composition, campus layout, architecture, all objects, all Cyrillic labels verbatim and readable, linework, simplified hand-drawn manhwa style and existing brown/amber/muted-purple palette.
+Change atmosphere and tonal lighting only: lower ambient light to a brooding late dusk, deepen dark umber and aubergine shadows, make roof silhouettes and recesses darker, strengthen cast shadows and crisp cel-shaded light/shadow separation. Keep highlights selective: warm amber windows and lanterns glowing vividly in pools against deep shadow, cyan summoning circle and restrained violet magic standing out. Darken the mountain backdrop, with ominous cloud masses and layered pale mist in the valleys to separate silhouettes. Maintain readable building forms and paths, no crushed black detail or flat all-over darkness. Mood: imposing gothic dark fantasy, restrained, somber and mysterious. Retain warm stone and plum roofs, avoid converting the whole image to cold gray/blue. No new buildings, no new creatures, no added text, no border or watermark.

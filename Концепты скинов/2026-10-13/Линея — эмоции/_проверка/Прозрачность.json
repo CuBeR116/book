@@ -1,0 +1,128 @@
+[
+  {
+    "File": "01 Нейтральная.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "02 Мягкая улыбка.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": false,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "03 Радость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "04 Смех.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "05 Грусть.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "06 Плач.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "07 Злость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "08 Раздражение.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "09 Тревога.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "10 Страх.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "11 Удивление.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "12 Смущение.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "13 Задумчивость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "14 Сомнение.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "15 Обида.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": false,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "16 Решимость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "17 Облегчение.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  },
+  {
+    "File": "18 Усталость.png",
+    "Width": 1024,
+    "Height": 1536,
+    "CornersTransparent": true,
+    "OutsideTransparent": true
+  }
+]

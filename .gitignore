@@ -10,6 +10,7 @@
 *.psd
 *.safetensors
 *.ckpt
+*.zip
 
 # Служебное
 __pycache__/
