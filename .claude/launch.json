@@ -42,6 +42,33 @@
       ],
       "port": 8783,
       "url": "http://127.0.0.1:8783"
+    },
+    {
+      "name": "game-dist",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8790",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "Игра/dist"
+      ],
+      "port": 8790,
+      "url": "http://127.0.0.1:8790"
+    },
+    {
+      "name": "roblox-rojo",
+      "runtimeExecutable": "Roblox/tools/bin/rojo.exe",
+      "runtimeArgs": [
+        "serve",
+        "Roblox/default.project.json",
+        "--port",
+        "34872"
+      ],
+      "port": 34872,
+      "url": "http://localhost:34872"
     }
   ]
 }
