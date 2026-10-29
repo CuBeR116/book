@@ -69,6 +69,21 @@
       ],
       "port": 34872,
       "url": "http://localhost:34872"
+    },
+    {
+      "name": "covers",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8791",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "Арты/Эмерин/Обложка — черновик"
+      ],
+      "port": 8791,
+      "url": "http://127.0.0.1:8791"
     }
   ]
 }
