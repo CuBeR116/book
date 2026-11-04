@@ -44,6 +44,22 @@
       "url": "http://127.0.0.1:8783"
     },
     {
+      "name": "game-isolated",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Игра/node_modules/vite/bin/vite.js",
+        "--config",
+        "Игра/preview/isolated-vite.config.js",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8784",
+        "--strictPort"
+      ],
+      "port": 8784,
+      "url": "http://127.0.0.1:8784"
+    },
+    {
       "name": "game-dist",
       "runtimeExecutable": "python",
       "runtimeArgs": [
